@@ -1,0 +1,16 @@
+build:
+  pip install -r requirements.txt
+
+run:
+  pip install -r requirements.txt
+  cd webapp && python app.py
+
+services:
+  - type: web
+    name: resqbit
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd webapp && python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"

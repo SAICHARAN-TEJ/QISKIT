@@ -47,6 +47,28 @@ set DATA_SOURCE=api
 set DEFAULT_CITY=New York
 ```
 
+## Deployment
+
+### Option 1: Render (Free)
+1. Push to GitHub
+2. Go to https://render.com and sign in
+3. Create New > Web Service
+4. Connect your GitHub repository
+5. Build Command: `pip install -r requirements.txt`
+6. Start Command: `cd webapp && python app.py`
+7. Click Deploy
+
+### Option 2: Railway
+1. Push to GitHub  
+2. Go to https://railway.app and sign in
+3. Create New > Deploy from GitHub repo
+4. Set environment variables in Railway dashboard
+
+### Option 3: PythonAnywhere
+1. Go to https://pythonanywhere.com
+2. Upload files or clone from GitHub
+3. Set up web app in the Web tab
+
 ## Usage
 
 ```bash
