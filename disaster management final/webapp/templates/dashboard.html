@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Dashboard | ResQbit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}">
+</head>
+<body>
+    <div class="app-background"></div>
+    
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <nav class="nav-sidebar">
+            <div class="nav-logo">
+                <div class="nav-logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <span class="nav-logo-text">ResQbit</span>
+            </div>
+            
+            <div class="nav-user">
+                <div class="user-avatar">{{ username[0]|upper if username else 'U' }}</div>
+                <div class="user-info">
+                    <span class="user-name">{{ username or 'User' }}</span>
+                    <span class="user-status">
+                        <span class="status-led online"></span>
+                        Online
+                    </span>
+                </div>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                    </span>
+                    Dashboard
+                </a>
+                <a href="#predictions" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.21 15.89A10 10 0 118 2.83"/>
+                            <path d="M22 12A10 10 0 0012 2v10z"/>
+                        </svg>
+                    </span>
+                    Predictions
+                </a>
+                <a href="#alerts" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                        </svg>
+                    </span>
+                    Alerts
+                </a>
+                <a href="#settings" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+                        </svg>
+                    </span>
+                    Settings
+                </a>
+            </div>
+            
+            <div class="nav-footer">
+                <button class="btn-glass w-full" onclick="logout()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                        <polyline points="16,17 21,12 16,7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="content-area">
+            <header class="page-header">
+                <div class="header-content">
+                    <div>
+                        <h1 class="page-title">Command Center</h1>
+                        <p class="page-subtitle">Real-time disaster monitoring and response</p>
+                    </div>
+                    <div class="header-status">
+                        <span class="status-led online"></span>
+                        <span>System Operational</span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Prediction Form -->
+            <div class="control-panel mb-6">
+                <div class="predict-form">
+                    <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                        <label class="form-label">City / Location</label>
+                        <input type="text" class="glass-input" id="cityInput" placeholder="Enter city name" value="London">
+                    </div>
+                    <button class="btn-glass btn-primary-glass" onclick="runPrediction()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        Analyze
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Risk Gauge -->
+                <div class="glass-card p-6">
+                    <h3 class="card-title">Risk Assessment</h3>
+                    <div class="gauge-container">
+                        <div class="analog-gauge">
+                            <div class="gauge-ring"></div>
+                            <div class="gauge-inner">
+                                <span class="gauge-value" id="gaugeValue">--</span>
+                                <span class="gauge-label">RISK</span>
+                            </div>
+                            <div class="gauge-needle" id="gaugeNeedle"></div>
+                            <div class="gauge-center-dot"></div>
+                        </div>
+                    </div>
+                    <div class="risk-info">
+                        <div class="risk-type">
+                            <span class="risk-type-label">Disaster Type</span>
+                            <span class="risk-type-value" id="disasterType">--</span>
+                        </div>
+                        <div class="evac-status">
+                            <span class="evac-label">Evacuation</span>
+                            <span class="evac-value" id="evacNeeded">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sensor Data -->
+                <div class="glass-card p-6">
+                    <h3 class="card-title">Sensor Readings</h3>
+                    <div class="sensor-grid">
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
+                                </svg>
+                            </div>
+                            <span class="sensor-value" id="tempValue">--</span>
+                            <span class="sensor-label">Temperature</span>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                                </svg>
+                            </div>
+                            <span class="sensor-value" id="pressureValue">--</span>
+                            <span class="sensor-label">Pressure</span>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>
+                                </svg>
+                            </div>
+                            <span class="sensor-value" id="humidityValue">--</span>
+                            <span class="sensor-label">Humidity</span>
+                        </div>
+                        <div class="sensor-item">
+                            <div class="sensor-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2"/>
+                                </svg>
+                            </div>
+                            <span class="sensor-value" id="windValue">--</span>
+                            <span class="sensor-label">Wind</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map -->
+                <div class="glass-card p-6 map-card">
+                    <h3 class="card-title">Location Map</h3>
+                    <div id="map" class="map-container"></div>
+                </div>
+                
+                <!-- Route -->
+                <div class="glass-card p-6" id="routeCard" style="display: none;">
+                    <h3 class="card-title">Evacuation Route</h3>
+                    <div class="route-info">
+                        <div class="route-row">
+                            <span>Destination</span>
+                            <span id="routeDest">--</span>
+                        </div>
+                        <div class="route-row">
+                            <span>Distance</span>
+                            <span id="routeDist">--</span>
+                        </div>
+                        <div class="route-row">
+                            <span>Type</span>
+                            <span id="routeType">--</span>
+                        </div>
+                    </div>
+                    <button class="btn-glass btn-primary-glass w-full mt-4" onclick="sendAlerts()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        </svg>
+                        Send Alerts
+                    </button>
+                </div>
+                
+                <!-- System Status -->
+                <div class="glass-card p-6">
+                    <h3 class="card-title">System Status</h3>
+                    <div class="status-list">
+                        <div class="status-row">
+                            <span>API Status</span>
+                            <span class="status-badge success">Connected</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Database</span>
+                            <span class="status-badge success">Active</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Rate Limit</span>
+                            <span class="status-badge">9/10</span>
+                        </div>
+                        <div class="status-row">
+                            <span>Last Update</span>
+                            <span id="lastUpdate">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

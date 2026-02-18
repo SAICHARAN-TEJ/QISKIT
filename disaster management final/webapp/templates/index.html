@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="ResQbit - AI-Powered Disaster Response System">
+    <title>ResQbit | Quantum Disaster Response</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body>
+    <div class="app-background"></div>
+    
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <span class="brand-name">ResQbit</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#security" class="nav-link">Security</a>
+                <button class="btn-glass" onclick="openModal('loginModal')">Login</button>
+                <button class="btn-glass btn-primary-glass" onclick="openModal('registerModal')">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="status-led online"></span>
+                AI-Powered Disaster Response
+            </div>
+            <h1 class="hero-title">
+                Quantum-Enhanced<br>
+                <span class="text-gradient">Disaster Prediction</span>
+            </h1>
+            <p class="hero-description">
+                Real-time disaster detection, intelligent evacuation routing, and instant alerts. 
+                Protect lives with advanced quantum-inspired algorithms and enterprise-grade security.
+            </p>
+            <div class="hero-actions">
+                <button class="btn-glass btn-primary-glass btn-large" onclick="openModal('registerModal')">
+                    Start Free Trial
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <button class="btn-glass btn-large" onclick="scrollToDemo()">
+                    Watch Demo
+                </button>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-value">99.9%</span>
+                    <span class="stat-label">Accuracy</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">50ms</span>
+                    <span class="stat-label">Response Time</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">Free</span>
+                    <span class="stat-label">APIs Used</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hero Visual - Dashboard Preview -->
+        <div class="hero-visual">
+            <div class="dashboard-preview glass-panel">
+                <div class="preview-header">
+                    <div class="preview-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="preview-title">Live Command Center</span>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-gauge">
+                        <div class="analog-gauge">
+                            <div class="gauge-ring"></div>
+                            <div class="gauge-inner">
+                                <span class="gauge-value">11%</span>
+                                <span class="gauge-label">Risk Level</span>
+                            </div>
+                            <div class="gauge-needle"></div>
+                            <div class="gauge-center-dot"></div>
+                        </div>
+                    </div>
+                    <div class="preview-stats">
+                        <div class="preview-stat">
+                            <span class="preview-stat-label">Temperature</span>
+                            <span class="preview-stat-value">22.5°C</span>
+                        </div>
+                        <div class="preview-stat">
+                            <span class="preview-stat-label">Pressure</span>
+                            <span class="preview-stat-value">1012 hPa</span>
+                        </div>
+                        <div class="preview-stat">
+                            <span class="preview-stat-label">Humidity</span>
+                            <span class="preview-stat-value">65%</span>
+                        </div>
+                        <div class="preview-stat">
+                            <span class="preview-stat-label">Wind</span>
+                            <span class="preview-stat-value">5.2 m/s</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-status">
+                    <span class="status-led online"></span>
+                    <span>System Operational</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="section-header">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">Everything you need for disaster response</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/>
+                    </svg>
+                </div>
+                <h3>Quantum Algorithm</h3>
+                <p>Advanced quantum-inspired optimization for fastest evacuation routes</p>
+            </div>
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2v20M2 12h20"/>
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+                <h3>Real-Time Data</h3>
+                <p>Live weather data from OpenWeatherMap with Jena dataset backup</p>
+            </div>
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <h3>Smart Routing</h3>
+                <p>OSRM-powered routes optimized for each disaster type</p>
+            </div>
+            <div class="feature-card glass-card">
+                <div class="feature-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+                    </svg>
+                </div>
+                <h3>Instant Alerts</h3>
+                <p>Discord webhooks & email notifications keep teams informed</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Section -->
+    <section id="security" class="security-section">
+        <div class="section-header">
+            <h2 class="section-title">Enterprise Security</h2>
+            <p class="section-subtitle">Bank-grade protection for your data</p>
+        </div>
+        <div class="security-grid">
+            <div class="security-item">
+                <div class="security-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                </div>
+                <h4>PBKDF2 Encryption</h4>
+                <p>100k iterations for password hashing</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h4>Rate Limiting</h4>
+                <p>Protection against brute force</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <h4>Audit Logging</h4>
+                <p>Complete activity tracking</p>
+            </div>
+            <div class="security-item">
+                <div class="security-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <h4>Input Sanitization</h4>
+                <p>XSS & injection prevention</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="nav-brand">
+                    <div class="brand-icon small">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <span class="brand-name">ResQbit</span>
+                </div>
+            </div>
+            <p class="footer-text">Open Source Disaster Response System. Built with free APIs.</p>
+            <p class="footer-copyright">&copy; 2026 ResQbit. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-container glass-panel">
+            <button class="modal-close" onclick="closeModal('loginModal')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to your dashboard</p>
+            </div>
+            <form id="loginForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="glass-input" id="loginUsername" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="glass-input" id="loginPassword" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-glass btn-primary-glass w-full">Sign In</button>
+            </form>
+            <p class="modal-footer-text">
+                Don't have an account? <a href="#" onclick="switchModal('loginModal', 'registerModal')">Create one</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal-overlay">
+        <div class="modal-container glass-panel">
+            <button class="modal-close" onclick="closeModal('registerModal')">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div class="modal-header">
+                <h2>Create Account</h2>
+                <p>Start protecting your community</p>
+            </div>
+            <form id="registerForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="glass-input" id="regUsername" required minlength="3" maxlength="30">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="glass-input" id="regEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="glass-input" id="regPassword" required minlength="8">
+                </div>
+                <button type="submit" class="btn-glass btn-primary-glass w-full">Create Account</button>
+            </form>
+            <p class="modal-footer-text">
+                Already have an account? <a href="#" onclick="switchModal('registerModal', 'loginModal')">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+</html>
