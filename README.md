@@ -1,4 +1,4 @@
-# Quantum Disaster Response System v3.0
+# ResQbit - Quantum Disaster Response System v3.0
 
 Real-time disaster prediction and evacuation routing with free APIs.
 
@@ -8,6 +8,7 @@ Real-time disaster prediction and evacuation routing with free APIs.
 - **Free Routing**: OSRM (OpenStreetMap) - no API key needed
 - **Alert Notifications**: Discord webhooks + Email (Gmail SMTP)
 - **Multi-type Prediction**: Heat Waves, Cyclones, Floods, Blizzards, Earthquakes
+- **User Authentication**: Secure registration/login with SQLite database
 
 ## Free APIs Used
 
@@ -18,72 +19,65 @@ Real-time disaster prediction and evacuation routing with free APIs.
 | Discord Webhooks | Unlimited | NO |
 | Gmail SMTP | Unlimited | NO (use app password) |
 
-## Installation
+## Local Development
 
 ```bash
+# Clone
 git clone https://github.com/SAICHARAN-TEJ/QISKIT.git
-cd "disaster management final"
+cd QISKIT
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Run web app
+cd webapp
+python app.py
 ```
 
-## Configuration (Optional)
-
-Set environment variables to enable features:
+## Configuration
 
 ```bash
 # Weather API (free key from openweathermap.org)
 set OPENWEATHERMAP_API_KEY=your_key
 
-# Discord alerts (Server Settings > Integrations > Webhooks)
+# Discord alerts
 set DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
 
 # Email alerts (enable 2FA, generate app password)
 set SENDER_EMAIL=your_email@gmail.com
 set SENDER_PASSWORD=your_app_password
 set RECIPIENT_EMAILS=alert@example.com
-
-# Use live API data instead of Jena dataset
-set DATA_SOURCE=api
-set DEFAULT_CITY=New York
 ```
 
-## Usage
+## API Endpoints
 
-```bash
-cd src
-python disaster_system.py
-```
-
-## Output
-
-```
-QUANTUM DISASTER RESPONSE SYSTEM v3.0
-Real-time Weather | Free Routing | Alert Notifications
-============================================================
-[*] Initializing components...
-[*] Fetching weather data...
-
-[+] SENSOR READINGS:
-    Pressure:   1012.34 mbar
-    Temperature:22.50 degC
-    Humidity:   65.20%
-    Wind Speed: 5.20 m/s
-    ...
-
-[OK] System execution completed!
-```
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Landing page |
+| `/dashboard` | GET | User dashboard (requires login) |
+| `/api/predict` | POST | Disaster prediction |
+| `/api/route` | POST | Evacuation route |
+| `/api/register` | POST | User registration |
+| `/api/login` | POST | User login |
+| `/api/logout` | POST | User logout |
+| `/api/status` | GET | API status |
 
 ## Project Structure
 
 ```
-disaster management final/
+QISKIT/
 ├── src/
-│   ├── disaster_system.py          # Main system (all-in-one)
+│   ├── disaster_system.py          # CLI system
 │   └── data/
 │       └── jena_climate_2009_2016.csv
-├── PRD.md
+├── webapp/
+│   ├── app.py                      # Flask web app
+│   ├── static/                     # CSS, JS
+│   └── templates/                  # HTML templates
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+├── Procfile
+└── runtime.txt
 ```
 
 ## Disaster Detection
@@ -105,6 +99,5 @@ disaster management final/
 
 ## Troubleshooting
 
-- **No API keys**: System works without keys using Jena dataset
-- **OSRM fails**: Falls back to quantum-inspired routing
-- **Discord/Email not working**: Check webhook URL / Use Gmail app password
+- **No API keys**: Works without keys using Jena dataset
+- **Database errors**: SQLite auto-creates on first run
