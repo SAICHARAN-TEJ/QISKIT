@@ -1,1 +1,1 @@
-web: cd webapp && python app.py
+web: gunicorn --chdir webapp app:app

@@ -287,16 +287,12 @@ def after_request(response):
 def index():
     return render_template('index.html')
 
-
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('index'))
-    return render_template('dashboard.html', username=session.get('username', 'User'))
+    return render_template('dashboard.html')
 
 
 @app.route('/api/predict', methods=['POST'])
-@limiter.limit("10 per minute")
 def api_predict():
     try:
         data = request.get_json() or {}
@@ -307,21 +303,12 @@ def api_predict():
             return jsonify({"error": "Invalid city name"}), 400
         
         result = predictor.predict(city)
-        
-        if 'user_id' in session:
-            DatabaseManager.log_action(
-                session['user_id'], 'prediction',
-                request.remote_addr, request.headers.get('User-Agent', ''),
-                f"City: {city}, Disaster: {result.get('disaster_type')}"
-            )
-        
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/route', methods=['POST'])
-@limiter.limit("10 per minute")
 def api_route():
     try:
         data = request.get_json() or {}
@@ -335,8 +322,8 @@ def api_route():
         disaster_lat = float(disaster.get('lat', 0))
         disaster_lon = float(disaster.get('lon', 0))
         
-        if not all(SecurityConfig.validate_coordinates(current_lat, current_lon),
-                   SecurityConfig.validate_coordinates(disaster_lat, disaster_lon)):
+        if not all([SecurityConfig.validate_coordinates(current_lat, current_lon),
+                   SecurityConfig.validate_coordinates(disaster_lat, disaster_lon)]):
             return jsonify({"error": "Invalid coordinates"}), 400
         
         result = route_optimizer.calculate_route(
@@ -352,102 +339,6 @@ def api_route():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/api/register', methods=['POST'])
-@limiter.limit("3 per minute")
-def register():
-    try:
-        data = request.get_json() or {}
-        
-        username = SecurityConfig.sanitize_input(data.get('username', ''), 30)
-        email = SecurityConfig.sanitize_input(data.get('email', ''), 100)
-        password = data.get('password', '')
-        
-        if not username or not email or not password:
-            return jsonify({"error": "All fields required"}), 400
-        
-        if len(password) < 8:
-            return jsonify({"error": "Password must be at least 8 characters"}), 400
-        
-        if not SecurityConfig.validate_email(email):
-            return jsonify({"error": "Invalid email format"}), 400
-        
-        password_hash, salt = DatabaseManager.hash_password(password)
-        
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            cursor.execute(
-                'INSERT INTO users (username, email, password_hash, salt) VALUES (?, ?, ?, ?)',
-                (username, email, password_hash, salt)
-            )
-            conn.commit()
-            conn.close()
-            
-            DatabaseManager.log_action(None, 'register', request.remote_addr, 
-                                      request.headers.get('User-Agent', ''), f"User: {username}")
-            
-            return jsonify({"message": "Registration successful"})
-        except sqlite3.IntegrityError:
-            return jsonify({"error": "Username or email already exists"}), 400
-            
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/api/login', methods=['POST'])
-@limiter.limit("5 per minute")
-def login():
-    try:
-        data = request.get_json() or {}
-        
-        username = SecurityConfig.sanitize_input(data.get('username', ''), 30)
-        password = data.get('password', '')
-        
-        if not username or not password:
-            return jsonify({"error": "Invalid credentials"}), 400
-        
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute(
-            'SELECT id, username, password_hash, salt FROM users WHERE username = ? AND is_active = 1',
-            (username,)
-        )
-        user = cursor.fetchone()
-        conn.close()
-        
-        if not user:
-            return jsonify({"error": "Invalid credentials"}), 400
-        
-        user_id, db_username, stored_hash, salt = user
-        
-        if DatabaseManager.verify_password(password, stored_hash, salt):
-            session['user_id'] = user_id
-            session['username'] = db_username
-            session['ip'] = request.remote_addr
-            
-            DatabaseManager.log_action(user_id, 'login', request.remote_addr,
-                                      request.headers.get('User-Agent', ''), f"User: {db_username}")
-            
-            return jsonify({"message": "Login successful", "username": db_username})
-        
-        DatabaseManager.log_action(user_id, 'failed_login', request.remote_addr,
-                                  request.headers.get('User-Agent', ''), f"User: {username}")
-        
-        return jsonify({"error": "Invalid credentials"}), 401
-        
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route('/api/logout', methods=['POST'])
-def logout():
-    if 'user_id' in session:
-        DatabaseManager.log_action(session['user_id'], 'logout', request.remote_addr,
-                                    request.headers.get('User-Agent', ''))
-    session.clear()
-    return jsonify({"message": "Logged out"})
-
-
 @app.route('/api/status')
 def api_status():
     return jsonify({
@@ -457,19 +348,12 @@ def api_status():
         "timestamp": datetime.now().isoformat()
     })
 
-
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    return jsonify({"error": "Rate limit exceeded. Please try again later."}), 429
-
-
 @app.errorhandler(500)
 def error_handler(e):
-    DatabaseManager.log_action(None, 'error', request.remote_addr,
-                              request.headers.get('User-Agent', ''), str(e))
     return jsonify({"error": "Internal server error"}), 500
 
 
 if __name__ == '__main__':
     DatabaseManager.init_db()
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
