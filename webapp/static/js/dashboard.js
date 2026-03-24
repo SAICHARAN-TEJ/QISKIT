@@ -85,8 +85,17 @@ function updateQuantumMetrics(metrics) {
 }
 
 async function runPrediction() {
-    const city = document.getElementById('cityInput')?.value?.trim() || 'London';
-    if (!city) return;
+    const cityInput = document.getElementById('cityInput');
+    let city = cityInput?.value?.trim() || 'Chennai';
+    let lat = null;
+    let lon = null;
+    
+    // Check if user used their location
+    if (cityInput?.dataset?.lat && cityInput?.dataset?.lon) {
+        lat = parseFloat(cityInput.dataset.lat);
+        lon = parseFloat(cityInput.dataset.lon);
+        city = 'Your Location';
+    }
 
     const overlay = document.getElementById('loadOverlay');
     if (overlay) overlay.style.display = 'flex';
@@ -95,7 +104,7 @@ async function runPrediction() {
         const res = await fetch('/api/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ city })
+            body: JSON.stringify({ city, lat, lon })
         });
 
         if (res.status === 429) {
@@ -227,17 +236,73 @@ function capitalize(s) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check for city in URL params
+    // Check for city/location in URL params
     const params = new URLSearchParams(window.location.search);
     const city = params.get('city');
     const lat = params.get('lat');
     const lon = params.get('lon');
     
-    if (city) {
-        const cityInput = document.getElementById('cityInput');
+    const cityInput = document.getElementById('cityInput');
+    
+    if (lat && lon) {
+        if (cityInput) {
+            cityInput.value = city || 'Your Location';
+            cityInput.dataset.lat = lat;
+            cityInput.dataset.lon = lon;
+        }
+    } else if (city) {
         if (cityInput) cityInput.value = city;
+    } else {
+        // Try to get user's location automatically
+        requestUserLocation();
     }
     
     initMap();
     runPrediction();
 });
+
+function requestUserLocation() {
+    if ('geolocation' in navigator) {
+        const locationBtn = document.getElementById('locationBtn');
+        if (locationBtn) return; // Already added
+        
+        const btn = document.createElement('button');
+        btn.innerHTML = '📍 My Location';
+        btn.id = 'locationBtn';
+        btn.style.cssText = 'background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); padding: 14px 18px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; white-space: nowrap;';
+        btn.onclick = () => {
+            btn.innerHTML = '⏳ Detecting...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+                    
+                    if (cityInput) {
+                        cityInput.value = '📍 Your Location';
+                        cityInput.dataset.lat = userLat;
+                        cityInput.dataset.lon = userLon;
+                    }
+                    
+                    // Update URL
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('lat', userLat);
+                    url.searchParams.set('lon', userLon);
+                    window.history.pushState({}, '', url);
+                    
+                    showToast('Location detected! Running analysis...');
+                    runPrediction();
+                },
+                (error) => {
+                    btn.innerHTML = '📍 My Location';
+                    showToast('Could not get location: ' + error.message);
+                }
+            );
+        };
+        
+        // Add button next to analyze button
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        if (analyzeBtn && analyzeBtn.parentElement) {
+            analyzeBtn.parentElement.appendChild(btn);
+        }
+    }
+}
