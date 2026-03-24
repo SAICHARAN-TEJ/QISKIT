@@ -1,291 +1,989 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="QiskitML - Quantum Machine Learning Disaster Prediction System powered by Qiskit.">
-    <title>QiskitML | Quantum ML Disaster Prediction</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}?v=4">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=4">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QiskitML — Quantum Disaster Prediction</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  :root {
+    --c-bg: #050810;
+    --c-surface: #0b0f1a;
+    --c-glass: rgba(255,255,255,0.04);
+    --c-border: rgba(255,255,255,0.08);
+    --c-text: #e8eaf0;
+    --c-muted: #6b7280;
+    --c-accent: #00d4ff;
+    --c-accent-glow: rgba(0,212,255,0.25);
+    --c-cyan: #06b6d4;
+    --c-amber: #f59e0b;
+    --c-green: #10b981;
+    --c-purple: #c084fc;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--c-bg);
+    color: var(--c-text);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  #cursor {
+    position: fixed; z-index: 9999; pointer-events: none;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--c-accent);
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: normal;
+  }
+  #cursor-ring {
+    position: fixed; z-index: 9998; pointer-events: none;
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(0,212,255,0.5);
+    transform: translate(-50%, -50%);
+    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), width 0.3s, height 0.3s;
+  }
+  body:has(a:hover) #cursor, body:has(button:hover) #cursor { width: 14px; height: 14px; background: var(--c-cyan); }
+  body:has(a:hover) #cursor-ring, body:has(button:hover) #cursor-ring { width: 60px; height: 60px; border-color: rgba(0,212,255,0.3); }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: -200%; z-index: 9991; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.028;
+    animation: grain 0.5s steps(2) infinite;
+  }
+  @keyframes grain { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-2%,-1%)} 50%{transform:translate(1%,2%)} 75%{transform:translate(-1%,1%)} }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 3rem;
+    border-bottom: 1px solid transparent;
+    transition: background 0.4s, border-color 0.4s, backdrop-filter 0.4s;
+  }
+  nav.scrolled {
+    background: rgba(5,8,16,0.85);
+    backdrop-filter: blur(16px);
+    border-color: var(--c-border);
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    letter-spacing: 0.08em;
+    color: var(--c-text);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--c-accent); }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--c-muted); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--c-text); }
+  .nav-cta {
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em;
+    color: var(--c-accent); border: 1px solid var(--c-accent);
+    padding: 0.5rem 1.25rem; border-radius: 2px; text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+    text-transform: uppercase;
+  }
+  .nav-cta:hover { background: var(--c-accent); color: #050810; }
+
+  #hero {
+    position: relative; height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden; text-align: center;
+  }
+  #canvas-bg {
+    position: absolute; inset: 0; z-index: 0;
+  }
+  .hero-content { position: relative; z-index: 2; max-width: 900px; padding: 0 2rem; }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--c-accent); margin-bottom: 1.5rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    opacity: 0;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--c-accent); opacity: 0.5;
+  }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 14vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--c-text);
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  .hero-title .accent { color: var(--c-accent); display: inline-block; }
+  .hero-title .sub { font-size: 0.42em; letter-spacing: 0.12em; color: var(--c-muted); display: block; margin-top: 0.2em; }
+
+  .hero-desc {
+    margin: 2rem auto 0;
+    max-width: 500px;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--c-muted);
+    opacity: 0;
+  }
+
+  .hero-actions {
+    display: flex; gap: 1rem; justify-content: center; margin-top: 2.5rem;
+    opacity: 0;
+  }
+  .btn-primary {
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 0.85rem 2rem; border-radius: 2px;
+    background: var(--c-accent); color: #050810; border: none; cursor: none;
+    transition: opacity 0.2s, transform 0.15s;
+    text-decoration: none; display: inline-block; font-weight: 600;
+  }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
+  .btn-ghost {
+    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 0.85rem 2rem; border-radius: 2px;
+    background: transparent; color: var(--c-text); border: 1px solid var(--c-border);
+    cursor: none; transition: border-color 0.2s, transform 0.15s;
+    text-decoration: none; display: inline-block;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+  .hero-scroll-hint {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--c-muted);
+    opacity: 0; animation: fadeInUp 1s 2.5s forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 40px; background: linear-gradient(to bottom, var(--c-muted), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(0.6)} }
+  @keyframes fadeInUp { to { opacity: 1; } }
+
+  .ticker {
+    position: relative; z-index: 2;
+    background: rgba(0,212,255,0.08);
+    border-top: 1px solid rgba(0,212,255,0.2);
+    border-bottom: 1px solid rgba(0,212,255,0.2);
+    padding: 0.6rem 0; overflow: hidden;
+  }
+  .ticker-inner {
+    display: flex; gap: 3rem;
+    white-space: nowrap;
+    animation: tickerScroll 30s linear infinite;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--c-accent);
+  }
+  .ticker-inner span { opacity: 0.7; }
+  .ticker-inner strong { opacity: 1; }
+  @keyframes tickerScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  .metrics-section {
+    padding: 5rem 3rem;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: var(--c-border);
+  }
+  .metric-cell {
+    background: var(--c-bg);
+    padding: 2.5rem 2rem;
+    position: relative; overflow: hidden;
+  }
+  .metric-cell::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(to right, transparent, var(--c-accent), transparent);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 0.6s ease;
+  }
+  .metric-cell:hover::before { transform: scaleX(1); }
+  .metric-num {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--c-text); line-height: 1;
+  }
+  .metric-num .unit { font-size: 0.45em; color: var(--c-muted); }
+  .metric-label { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-muted); margin-top: 0.5rem; }
+
+  .dashboard-section {
+    padding: 6rem 3rem;
+    max-width: 1400px; margin: 0 auto;
+  }
+  .section-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 3rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1; letter-spacing: 0.02em;
+  }
+  .section-title span { color: var(--c-accent); }
+  .section-label {
+    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--c-muted);
+  }
+  .live-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--c-green); margin-right: 0.5rem;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+  @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,0.4)} 50%{opacity:0.7;box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+
+  .disaster-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px;
+    background: var(--c-border); border: 1px solid var(--c-border);
+  }
+  .disaster-card {
+    background: var(--c-surface);
+    padding: 1.75rem;
+    position: relative; cursor: none;
+    transition: background 0.25s;
+  }
+  .disaster-card:hover { background: rgba(15,20,35,0.9); }
+  .disaster-card-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;
+  }
+  .disaster-type {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--c-muted);
+  }
+  .risk-badge {
+    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 2px;
+  }
+  .risk-critical { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .risk-high { background: rgba(245,158,11,0.12); color: var(--c-amber); border: 1px solid rgba(245,158,11,0.3); }
+  .risk-medium { background: rgba(6,182,212,0.1); color: var(--c-cyan); border: 1px solid rgba(6,182,212,0.25); }
+  .risk-low { background: rgba(16,185,129,0.1); color: var(--c-green); border: 1px solid rgba(16,185,129,0.25); }
+  .risk-percent {
+    font-family: var(--font-display);
+    font-size: 3rem; line-height: 1;
+    color: var(--c-text); margin-bottom: 0.5rem;
+  }
+  .risk-bar {
+    height: 2px; background: rgba(255,255,255,0.06);
+    margin: 1rem 0; border-radius: 1px; overflow: hidden;
+  }
+  .risk-bar-fill {
+    height: 100%; border-radius: 1px;
+    transition: width 1.5s cubic-bezier(0.23,1,0.32,1);
+  }
+  .disaster-meta {
+    display: flex; gap: 1.5rem;
+    font-family: var(--font-mono); font-size: 0.65rem;
+    color: var(--c-muted); letter-spacing: 0.05em;
+  }
+  .disaster-meta span { display: flex; flex-direction: column; gap: 0.2rem; }
+  .disaster-meta strong { color: var(--c-text); font-weight: 500; font-size: 0.75rem; }
+
+  .features-section {
+    padding: 6rem 3rem;
+    background: var(--c-surface);
+    position: relative;
+  }
+  .features-section::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(to right, transparent, var(--c-border), transparent);
+  }
+  .features-grid {
+    max-width: 1400px; margin: 3rem auto 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--c-border);
+  }
+  .feature-item {
+    background: var(--c-surface);
+    padding: 2.5rem 2rem;
+    position: relative; overflow: hidden;
+    transition: background 0.25s;
+  }
+  .feature-item:hover { background: rgba(15,20,35,0.7); }
+  .feature-num {
+    font-family: var(--font-display); font-size: 4rem; line-height: 1;
+    color: rgba(255,255,255,0.05); position: absolute; top: 1rem; right: 1.5rem;
+    pointer-events: none;
+  }
+  .feature-icon {
+    width: 36px; height: 36px; margin-bottom: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .feature-title {
+    font-size: 1rem; font-weight: 600; letter-spacing: 0.02em;
+    margin-bottom: 0.75rem; color: var(--c-text);
+  }
+  .feature-desc { font-size: 0.85rem; line-height: 1.7; color: var(--c-muted); }
+  .feature-tag {
+    display: inline-block; margin-top: 1.25rem;
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--c-cyan);
+    border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 1px;
+  }
+
+  .disaster-scroll-section {
+    padding: 6rem 0;
+    overflow: hidden;
+  }
+  .disaster-scroll-section .section-header { padding: 0 3rem; }
+  .scroll-track {
+    display: flex; gap: 1px;
+    animation: scrollTrack 25s linear infinite;
+    width: max-content; background: var(--c-border);
+    border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
+    margin-top: 3rem;
+  }
+  .scroll-track:hover { animation-play-state: paused; }
+  @keyframes scrollTrack { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .disaster-pill {
+    background: var(--c-surface);
+    padding: 2rem 2.5rem;
+    white-space: nowrap; min-width: 240px;
+    transition: background 0.2s;
+  }
+  .disaster-pill:hover { background: rgba(15,20,35,0.8); }
+  .disaster-pill-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+  .disaster-pill-name {
+    font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 0.05em;
+  }
+  .disaster-pill-thresh {
+    font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-muted);
+    margin-top: 0.4rem; letter-spacing: 0.1em;
+  }
+
+  .api-section {
+    padding: 6rem 3rem;
+    max-width: 1400px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+  }
+  .api-code {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 4px; overflow: hidden;
+  }
+  .api-code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--c-border);
+    background: rgba(255,255,255,0.02);
+  }
+  .code-dots { display: flex; gap: 6px; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dot:nth-child(1){background:#ef4444;opacity:0.7}
+  .code-dot:nth-child(2){background:#f59e0b;opacity:0.7}
+  .code-dot:nth-child(3){background:#10b981;opacity:0.7}
+  .code-lang { font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-muted); letter-spacing: 0.1em; }
+  pre {
+    padding: 1.5rem; font-family: var(--font-mono); font-size: 0.75rem;
+    line-height: 1.7; overflow-x: auto; color: var(--c-text);
+  }
+  .c-kw { color: #c084fc; }
+  .c-str { color: #86efac; }
+  .c-num { color: var(--c-amber); }
+  .c-key { color: var(--c-cyan); }
+  .c-cm { color: var(--c-muted); }
+
+  .cta-section {
+    padding: 8rem 3rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+    background: var(--c-surface);
+    border-top: 1px solid var(--c-border);
+  }
+  .cta-glow {
+    position: absolute; top: 50%; left: 50%;
+    width: 600px; height: 400px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 7rem); line-height: 0.95;
+    position: relative; z-index: 1;
+  }
+  .cta-subtitle { color: var(--c-muted); font-size: 0.95rem; margin: 1.5rem auto; max-width: 400px; line-height: 1.7; position: relative; z-index: 1; }
+  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; margin-top: 2rem; }
+
+  footer {
+    padding: 2rem 3rem;
+    border-top: 1px solid var(--c-border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-brand { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0.08em; }
+  .footer-brand span { color: var(--c-accent); }
+  .footer-copy { font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-muted); letter-spacing: 0.1em; }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { font-size: 0.72rem; color: var(--c-muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--c-text); }
+
+  .reveal { opacity: 0; transform: translateY(30px); }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .metrics-section { grid-template-columns: 1fr 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .api-section { grid-template-columns: 1fr; gap: 2rem; }
+    .disaster-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    .footer-links { justify-content: center; }
+  }
+</style>
 </head>
-
 <body>
-    <div class="custom-cursor"></div>
-    <div class="custom-cursor-follower"></div>
 
-    <div class="app-background"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
 
-    <nav class="landing-nav" id="mainNav">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <div class="brand-icon quantum-glow">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
-                    </svg>
-                </div>
-                <span class="brand-name">QiskitML</span>
-            </div>
-            <div class="nav-links">
-                <a href="#quantum-tech" class="nav-link">Quantum Technology</a>
-                <a href="#features" class="nav-link">Features</a>
-                <a href="#architecture" class="nav-link">Architecture</a>
-                <a href="/dashboard" class="btn-glass btn-primary-glass">Launch System</a>
-            </div>
+<nav id="nav">
+  <a href="#" class="nav-logo">Qiskit<span>ML</span></a>
+  <div class="nav-links">
+    <a href="#dashboard">Dashboard</a>
+    <a href="#features">Features</a>
+    <a href="#api">API</a>
+    <a href="/dashboard" class="nav-cta">Launch App</a>
+  </div>
+</nav>
+
+<section id="hero">
+  <canvas id="canvas-bg"></canvas>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Quantum Machine Learning · IBM Qiskit</div>
+    <h1 class="hero-title">
+      <span class="accent">Qiskit</span>ML
+      <span class="sub">Quantum-Accelerated Disaster Prediction</span>
+    </h1>
+    <p class="hero-desc">Harness quantum computing and machine learning for unprecedented disaster prediction accuracy. Powered by IBM Qiskit with variational quantum circuits.</p>
+    <div class="hero-actions">
+      <a href="/dashboard" class="btn-primary">Launch Application</a>
+      <a href="#api" class="btn-ghost">Explore API →</a>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <strong>⚡ QUANTUM ML ACTIVE</strong> <span>VQC · ZZFeatureMap · 4 Qubits</span>
+    <strong>◆ HEAT WAVE</strong> <span>Rajasthan — Temp 39°C — Risk 78%</span>
+    <strong>◆ CYCLONE</strong> <span>Bay of Bengal — Wind 18 m/s — Risk 87%</span>
+    <strong>◆ FLOOD WATCH</strong> <span>Kerala — Humidity 92% — Risk 71%</span>
+    <strong>✓ ALL CLEAR</strong> <span>Tamil Nadu — Normal Conditions</span>
+    <strong>⚡ QUANTUM ML ACTIVE</strong> <span>VQC · ZZFeatureMap · 4 Qubits</span>
+    <strong>◆ HEAT WAVE</strong> <span>Rajasthan — Temp 39°C — Risk 78%</span>
+    <strong>◆ CYCLONE</strong> <span>Bay of Bengal — Wind 18 m/s — Risk 87%</span>
+    <strong>◆ FLOOD WATCH</strong> <span>Kerala — Humidity 92% — Risk 71%</span>
+    <strong>✓ ALL CLEAR</strong> <span>Tamil Nadu — Normal Conditions</span>
+  </div>
+</div>
+
+<div class="metrics-section">
+  <div class="metric-cell">
+    <div class="metric-num"><span class="counter" data-target="4">0</span><span class="unit"> qubits</span></div>
+    <div class="metric-label">Quantum Processing</div>
+  </div>
+  <div class="metric-cell">
+    <div class="metric-num"><span class="counter" data-target="99.7">0</span><span class="unit">%</span></div>
+    <div class="metric-label">Prediction Accuracy</div>
+  </div>
+  <div class="metric-cell">
+    <div class="metric-num"><span class="counter" data-target="5">0</span><span class="unit"> types</span></div>
+    <div class="metric-label">Hazard Categories</div>
+  </div>
+  <div class="metric-cell">
+    <div class="metric-num"><span class="counter" data-target="0">0</span><span class="unit"> API Key</span></div>
+    <div class="metric-label">Routing (OSRM) — Free</div>
+  </div>
+</div>
+
+<section class="dashboard-section" id="dashboard">
+  <div class="section-header reveal">
+    <h2 class="section-title">Live <span>Risk</span> Feed</h2>
+    <div class="section-label"><span class="live-dot"></span>Quantum ML Analysis Active</div>
+  </div>
+  <div class="disaster-grid reveal">
+
+    <div class="disaster-card">
+      <div class="disaster-card-header">
+        <div class="disaster-type">Cyclone</div>
+        <div class="risk-badge risk-critical">Critical</div>
+      </div>
+      <div class="risk-percent" id="risk-cyclone">87<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#ef4444" data-width="87"></div></div>
+      <div class="disaster-meta">
+        <span><strong>18.4 m/s</strong> Wind Speed</span>
+        <span><strong>974 mbar</strong> Pressure</span>
+        <span><strong>Bay of Bengal</strong> Location</span>
+      </div>
+    </div>
+
+    <div class="disaster-card">
+      <div class="disaster-card-header">
+        <div class="disaster-type">Heat Wave</div>
+        <div class="risk-badge risk-high">High</div>
+      </div>
+      <div class="risk-percent" id="risk-heat">78<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-amber)" data-width="78"></div></div>
+      <div class="disaster-meta">
+        <span><strong>38.9°C</strong> Temperature</span>
+        <span><strong>64%</strong> Humidity</span>
+        <span><strong>Rajasthan</strong> Location</span>
+      </div>
+    </div>
+
+    <div class="disaster-card">
+      <div class="disaster-card-header">
+        <div class="disaster-type">Flood</div>
+        <div class="risk-badge risk-high">High</div>
+      </div>
+      <div class="risk-percent" id="risk-flood">71<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-cyan)" data-width="71"></div></div>
+      <div class="disaster-meta">
+        <span><strong>91.5%</strong> Humidity</span>
+        <span><strong>12.1°C</strong> Temp</span>
+        <span><strong>Kerala</strong> Location</span>
+      </div>
+    </div>
+
+    <div class="disaster-card">
+      <div class="disaster-card-header">
+        <div class="disaster-type">Blizzard</div>
+        <div class="risk-badge risk-medium">Medium</div>
+      </div>
+      <div class="risk-percent" id="risk-blizzard">54<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-cyan)" data-width="54"></div></div>
+      <div class="disaster-meta">
+        <span><strong>-6.2°C</strong> Temperature</span>
+        <span><strong>9.3 m/s</strong> Wind</span>
+        <span><strong>Himachal</strong> Location</span>
+      </div>
+    </div>
+
+    <div class="disaster-card">
+      <div class="disaster-card-header">
+        <div class="disaster-type">Earthquake</div>
+        <div class="risk-badge risk-low">Low</div>
+      </div>
+      <div class="risk-percent" id="risk-eq">32<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-green)" data-width="32"></div></div>
+      <div class="disaster-meta">
+        <span><strong>982 mbar</strong> Pressure</span>
+        <span><strong>Stable</strong> Seismic</span>
+        <span><strong>Gujarat</strong> Location</span>
+      </div>
+    </div>
+
+    <div class="disaster-card" style="background:rgba(16,185,129,0.04);">
+      <div class="disaster-card-header">
+        <div class="disaster-type" style="color:var(--c-green)">Quantum Status</div>
+        <div class="risk-badge risk-low">Active</div>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--c-muted);line-height:2;margin-top:0.5rem">
+        <div style="color:var(--c-green)">▶ ZZFeatureMap Encoding</div>
+        <div>VQC Architecture: EfficientSU2</div>
+        <div>Backend: <strong style="color:var(--c-accent)">Classical Simulator</strong></div>
+        <div>Shots: <strong style="color:var(--c-text)">1024</strong></div>
+        <div style="margin-top:0.5rem;color:var(--c-green)">✓ IBM Qiskit Ready</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="features-section" id="features">
+  <div style="max-width:1400px;margin:0 auto">
+    <div class="section-header reveal">
+      <h2 class="section-title">Quantum <span>Features</span></h2>
+      <div class="section-label">Powered by IBM Qiskit</div>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-item">
+        <div class="feature-num">01</div>
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="3" stroke="#00d4ff" stroke-width="1.5"/><path d="M14 4v3M14 21v3M4 14h3M21 14h3M7 7l2 2M19 19l2 2M7 21l2-2M19 9l2-2" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-    </nav>
-
-    <section class="hero-section">
-        <div class="hero-content">
-            <div class="hero-badge">
-                <span class="status-led online"></span>
-                Quantum ML Powered · IBM Qiskit
-            </div>
-            <h1 class="hero-title">
-                Disaster Prediction<br>
-                <span class="text-gradient-accent">Quantum Enhanced.</span>
-            </h1>
-            <p class="hero-description">
-                Leverage quantum computing and machine learning for unprecedented disaster prediction accuracy. Built on IBM Qiskit for real quantum advantage.
-            </p>
-            <div class="hero-actions">
-                <a href="/dashboard" class="btn-glass btn-primary-glass btn-large" style="text-decoration: none;">
-                    Launch Application
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <span class="stat-value">4</span>
-                    <span class="stat-label">Quantum Qubits</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value">ZZ</span>
-                    <span class="stat-label">Feature Map</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value">VQC</span>
-                    <span class="stat-label">Architecture</span>
-                </div>
-            </div>
+        <div class="feature-title">ZZFeatureMap Encoding</div>
+        <div class="feature-desc">Second-order Pauli-Z entangling feature map captures complex correlations in environmental data impossible with classical models.</div>
+        <div class="feature-tag">Quantum Feature Encoding</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">02</div>
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M4 14h5l3-8 4 16 3-10h5" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-
-        <div class="hero-visual quantum-border">
-            <div class="dashboard-preview quantum-inner">
-                <div class="preview-header">
-                    <div class="preview-dots">
-                        <span></span><span></span><span></span>
-                    </div>
-                    <span class="preview-title">Quantum ML Pipeline</span>
-                </div>
-                <div class="preview-content">
-                    <div class="quantum-circuit-preview">
-                        <div class="circuit-layer">
-                            <span class="layer-label">Input</span>
-                            <div class="qubit-line">|0⟩</div>
-                            <div class="qubit-line">|0⟩</div>
-                            <div class="qubit-line">|0⟩</div>
-                            <div class="qubit-line">|0⟩</div>
-                        </div>
-                        <div class="circuit-layer">
-                            <span class="layer-label">Feature Map</span>
-                            <div class="gate h-gate">H</div>
-                            <div class="gate h-gate">H</div>
-                            <div class="gate h-gate">H</div>
-                            <div class="gate h-gate">H</div>
-                        </div>
-                        <div class="circuit-layer">
-                            <span class="layer-label">Entangle</span>
-                            <div class="qubit-line">─●─</div>
-                            <div class="qubit-line">─●─</div>
-                            <div class="qubit-line">─●─</div>
-                            <div class="qubit-line">─</div>
-                        </div>
-                        <div class="circuit-layer">
-                            <span class="layer-label">Measure</span>
-                            <div class="gate measure">M</div>
-                            <div class="gate measure">M</div>
-                            <div class="gate measure">M</div>
-                            <div class="gate measure">M</div>
-                        </div>
-                    </div>
-                    <div class="preview-stats">
-                        <div class="preview-stat">
-                            <span class="preview-stat-label">Entropy</span>
-                            <span class="preview-stat-value" id="heroEntropy">0.82</span>
-                        </div>
-                        <div class="preview-stat">
-                            <span class="preview-stat-label">Purity</span>
-                            <span class="preview-stat-value" id="heroPurity">0.94</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="preview-status">
-                    <span class="status-led online"></span>
-                    Quantum Backend Connected
-                </div>
-            </div>
+        <div class="feature-title">Variational Quantum Circuits</div>
+        <div class="feature-desc">Parameterized quantum circuits learn disaster patterns through hybrid quantum-classical optimization with EfficientSU2 ansatz.</div>
+        <div class="feature-tag">VQC Architecture</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">03</div>
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 4L4 10v8l10 6 10-6v-8z" stroke="#10b981" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 10v8M4 10l10 4 10-4" stroke="#10b981" stroke-width="1" opacity="0.5"/></svg>
         </div>
-    </section>
-
-    <section id="quantum-tech" class="hiw-section">
-        <div class="section-header reveal">
-            <h2 class="section-title text-gradient">Quantum Technology Stack</h2>
-            <p class="section-subtitle">Powered by IBM Qiskit for real quantum computing capabilities.</p>
+        <div class="feature-title">Multi-Hazard Detection</div>
+        <div class="feature-desc">Simultaneous detection across heat waves, cyclones, floods, blizzards, and earthquakes with quantum-enhanced accuracy.</div>
+        <div class="feature-tag">5 Disaster Types</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">04</div>
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5"/><rect x="15" y="4" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/><rect x="4" y="15" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/><rect x="15" y="15" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5" opacity="0.3"/></svg>
         </div>
-        <div class="hiw-steps">
-            <div class="hiw-step glass-card reveal">
-                <div class="hiw-number">01</div>
-                <h3>ZZFeatureMap</h3>
-                <p>Second-order Pauli-Z entangling feature map encodes environmental data into quantum states, capturing complex feature correlations.</p>
-            </div>
-            <div class="hiw-connector"></div>
-            <div class="hiw-step glass-card reveal" style="animation-delay: 0.15s;">
-                <div class="hiw-number">02</div>
-                <h3>Variational Circuits</h3>
-                <p>Parameterized quantum circuits learn disaster patterns through hybrid quantum-classical optimization.</p>
-            </div>
-            <div class="hiw-connector"></div>
-            <div class="hiw-step glass-card reveal" style="animation-delay: 0.3s;">
-                <div class="hiw-number">03</div>
-                <h3>Quantum Kernels</h3>
-                <p>Quantum-enhanced kernel methods compute similarity in high-dimensional Hilbert space.</p>
-            </div>
+        <div class="feature-title">Real-Time Weather Data</div>
+        <div class="feature-desc">OpenWeatherMap API integration with Jena climate dataset fallback. Continuous data stream for accurate predictions.</div>
+        <div class="feature-tag">Weather Integration</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">05</div>
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 12h12M8 16h8" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/><rect x="4" y="6" width="20" height="16" rx="3" stroke="#06b6d4" stroke-width="1.5"/></svg>
         </div>
-    </section>
-
-    <section id="features" class="features-section">
-        <div class="section-header reveal">
-            <h2 class="section-title">Quantum ML Features</h2>
-            <p class="section-subtitle">Cutting-edge quantum computing meets disaster prediction.</p>
+        <div class="feature-title">Instant Notifications</div>
+        <div class="feature-desc">Discord webhook and Gmail SMTP alerts fire instantly when quantum analysis detects disaster threats.</div>
+        <div class="feature-tag">Discord + Email</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-num">06</div>
+        <div class="feature-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#00d4ff" stroke-width="1.5"/><path d="M14 8v6l4 2" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round"/></svg>
         </div>
-        <div class="features-grid">
-            <div class="feature-card glass-card reveal">
-                <div class="feature-icon quantum-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83"/>
-                    </svg>
-                </div>
-                <h3>Quantum Feature Encoding</h3>
-                <p>ZZFeatureMap captures non-linear feature correlations impossible in classical models.</p>
-            </div>
-            <div class="feature-card glass-card reveal" style="animation-delay: 0.1s;">
-                <div class="feature-icon quantum-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                    </svg>
-                </div>
-                <h3>VQC Architecture</h3>
-                <p>Variational Quantum Classifier combines quantum processing with classical optimization.</p>
-            </div>
-            <div class="feature-card glass-card reveal" style="animation-delay: 0.2s;">
-                <div class="feature-icon quantum-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
-                    </svg>
-                </div>
-                <h3>Entanglement</h3>
-                <p>Quantum entanglement enables complex pattern recognition across disaster indicators.</p>
-            </div>
-            <div class="feature-card glass-card reveal" style="animation-delay: 0.3s;">
-                <div class="feature-icon quantum-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.73 21a2 2 0 01-3.46 0"/>
-                    </svg>
-                </div>
-                <h3>Real-time Alerts</h3>
-                <p>Instant notifications via Discord and Email when quantum analysis detects threats.</p>
-            </div>
+        <div class="feature-title">Evacuation Routing</div>
+        <div class="feature-desc">OSRM provides free, unlimited routing. Optimal evacuation paths computed in real-time with no API key required.</div>
+        <div class="feature-tag">OSRM — No Key Needed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="disaster-scroll-section">
+  <div class="section-header reveal">
+    <h2 class="section-title">Hazard <span>Coverage</span></h2>
+    <div class="section-label">Quantum ML Detection Matrix</div>
+  </div>
+  <div style="display:flex;overflow:hidden">
+    <div class="scroll-track">
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">🌊</div>
+        <div class="disaster-pill-name">Heat Wave</div>
+        <div class="disaster-pill-thresh">Temp > 35°C · Humidity > 60%</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">🌀</div>
+        <div class="disaster-pill-name">Cyclone</div>
+        <div class="disaster-pill-thresh">Wind > 15 m/s · Pressure < 980 mbar</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">💧</div>
+        <div class="disaster-pill-name">Flood</div>
+        <div class="disaster-pill-thresh">Humidity > 90% · Temp > 5°C</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">❄️</div>
+        <div class="disaster-pill-name">Blizzard</div>
+        <div class="disaster-pill-thresh">Temp < -5°C · Wind > 8 m/s</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">⚡</div>
+        <div class="disaster-pill-name">Earthquake</div>
+        <div class="disaster-pill-thresh">Pressure < 970 mbar · Anomaly</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">🌊</div>
+        <div class="disaster-pill-name">Heat Wave</div>
+        <div class="disaster-pill-thresh">Temp > 35°C · Humidity > 60%</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">🌀</div>
+        <div class="disaster-pill-name">Cyclone</div>
+        <div class="disaster-pill-thresh">Wind > 15 m/s · Pressure < 980 mbar</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">💧</div>
+        <div class="disaster-pill-name">Flood</div>
+        <div class="disaster-pill-thresh">Humidity > 90% · Temp > 5°C</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">❄️</div>
+        <div class="disaster-pill-name">Blizzard</div>
+        <div class="disaster-pill-thresh">Temp < -5°C · Wind > 8 m/s</div>
+      </div>
+      <div class="disaster-pill">
+        <div class="disaster-pill-icon">⚡</div>
+        <div class="disaster-pill-name">Earthquake</div>
+        <div class="disaster-pill-thresh">Pressure < 970 mbar · Anomaly</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background:var(--c-surface);border-top:1px solid var(--c-border);border-bottom:1px solid var(--c-border)">
+  <div class="api-section" id="api">
+    <div class="reveal">
+      <div class="section-label" style="margin-bottom:1.25rem">REST API</div>
+      <h2 class="section-title" style="margin-bottom:1.5rem">Predict with<br><span>Quantum Power</span></h2>
+      <p style="color:var(--c-muted);font-size:0.9rem;line-height:1.75;margin-bottom:2rem">
+        POST weather data to <code style="font-family:var(--font-mono);color:var(--c-cyan);font-size:0.8rem">/api/predict</code> and receive quantum-enhanced disaster predictions with risk scores and evacuation routes.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;font-family:var(--font-mono);font-size:0.72rem">
+        <div style="display:flex;gap:1rem;align-items:center">
+          <span style="color:var(--c-green);width:50px">POST</span>
+          <span style="color:var(--c-muted)">/api/predict</span>
         </div>
-    </section>
-
-    <section id="architecture" class="security-section">
-        <div class="section-inner">
-            <div class="section-header reveal">
-                <h2 class="section-title">System Architecture</h2>
-                <p class="section-subtitle">Hybrid quantum-classical pipeline for disaster prediction.</p>
-            </div>
-            <div class="security-grid">
-                <div class="security-item reveal">
-                    <div class="security-icon quantum-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2"/>
-                            <path d="M3 9h18M9 21V9"/>
-                        </svg>
-                    </div>
-                    <h4>Data Layer</h4>
-                    <p>Weather sensors + Jena climate dataset</p>
-                </div>
-                <div class="security-item reveal" style="animation-delay: 0.1s;">
-                    <div class="security-icon quantum-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M12 1v4M12 19v4"/>
-                        </svg>
-                    </div>
-                    <h4>Quantum Encoding</h4>
-                    <p>ZZFeatureMap quantum state preparation</p>
-                </div>
-                <div class="security-item reveal" style="animation-delay: 0.2s;">
-                    <div class="security-icon quantum-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                            <path d="M2 17l10 5 10-5"/>
-                        </svg>
-                    </div>
-                    <h4>VQC Processing</h4>
-                    <p>Variational quantum circuit classification</p>
-                </div>
-                <div class="security-item reveal" style="animation-delay: 0.3s;">
-                    <div class="security-icon quantum-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                            <path d="M14 2v6h6"/>
-                        </svg>
-                    </div>
-                    <h4>Prediction Output</h4>
-                    <p>Risk assessment + evacuation routing</p>
-                </div>
-            </div>
+        <div style="display:flex;gap:1rem;align-items:center">
+          <span style="color:var(--c-cyan);width:50px">POST</span>
+          <span style="color:var(--c-muted)">/api/route</span>
         </div>
-    </section>
-
-    <footer class="landing-footer">
-        <div class="footer-content">
-            <div class="footer-brand">
-                <div class="nav-brand">
-                    <div class="brand-icon small quantum-glow">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M12 1v4M12 19v4"/>
-                        </svg>
-                    </div>
-                    <span class="brand-name" style="font-size:1.15rem;">QiskitML</span>
-                </div>
-            </div>
-            <p class="footer-text">Quantum Machine Learning Disaster Prediction. Powered by IBM Qiskit.</p>
-            <p class="footer-copyright">© 2026 QiskitML. Built with Qiskit and Flask.</p>
+        <div style="display:flex;gap:1rem;align-items:center">
+          <span style="color:var(--c-cyan);width:50px">GET</span>
+          <span style="color:var(--c-muted)">/api/status</span>
         </div>
-    </footer>
+        <div style="display:flex;gap:1rem;align-items:center">
+          <span style="color:var(--c-cyan);width:50px">GET</span>
+          <span style="color:var(--c-muted)">/api/quantum-info</span>
+        </div>
+      </div>
+    </div>
+    <div class="api-code reveal">
+      <div class="api-code-header">
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+        <div class="code-lang">api/predict · POST</div>
+      </div>
+      <pre><span class="c-cm"># Request</span>
+curl -X POST <span class="c-str">http://localhost:5000/api/predict</span> \
+  -H <span class="c-str">"Content-Type: application/json"</span> \
+  -d <span class="c-str">'{"city": "London"}'</span>
 
-    <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="https://unpkg.com/split-type"></script>
+<span class="c-cm"># Response</span>
+{
+  <span class="c-key">"disaster_type"</span>: <span class="c-str">"normal"</span>,
+  <span class="c-key">"risk_percentage"</span>: <span class="c-num">10.9</span>,
+  <span class="c-key">"risk_level"</span>: <span class="c-str">"LOW"</span>,
+  <span class="c-key">"quantum_enabled"</span>: <span class="c-num">true</span>,
+  <span class="c-key">"quantum_metrics"</span>: {
+    <span class="c-key">"entropy"</span>: <span class="c-num">0.0</span>,
+    <span class="c-key">"purity"</span>: <span class="c-num">1.0</span>,
+    <span class="c-key">"advantage_score"</span>: <span class="c-num">0.0</span>
+  }
+}</pre>
+    </div>
+  </div>
+</section>
 
-    <script src="{{ url_for('static', filename='js/landing.js') }}?v=4"></script>
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <h2 class="cta-title reveal">Quantum ML.<br>Deploy <span style="color:var(--c-accent)">Today.</span></h2>
+  <p class="cta-subtitle reveal">Free APIs. Zero infrastructure cost. One command to deploy. QiskitML is ready when disaster isn't.</p>
+  <div class="cta-actions reveal">
+    <a href="https://github.com/SAICHARAN-TEJ/QISKIT" class="btn-primary">Clone on GitHub</a>
+    <a href="/dashboard" class="btn-ghost">Launch App →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">Qiskit<span>ML</span></div>
+  <div class="footer-copy">© 2026 SAICHARAN-TEJ · Quantum ML Disaster Prediction v4.0</div>
+  <div class="footer-links">
+    <a href="https://github.com/SAICHARAN-TEJ/QISKIT">GitHub</a>
+    <a href="#api">API Docs</a>
+    <a href="/dashboard">Dashboard</a>
+  </div>
+</footer>
+
+<script>
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+(function animCursor() {
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+})();
+
+(function() {
+  const canvas = document.getElementById('canvas-bg');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.z = 80;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x000000, 0);
+
+  const count = 3000;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    const phi = Math.acos(2 * Math.random() - 1);
+    const theta = Math.random() * Math.PI * 2;
+    const r = 30 + Math.random() * 25;
+    pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    pos[i*3+2] = r * Math.cos(phi);
+    const isAccent = Math.random() < 0.08;
+    col[i*3]   = isAccent ? 0.0 : 0.2 + Math.random() * 0.15;
+    col[i*3+1] = isAccent ? 0.83 : 0.35 + Math.random() * 0.15;
+    col[i*3+2] = isAccent ? 1.0 : 0.55 + Math.random() * 0.25;
+    sizes[i] = isAccent ? 1.8 : 0.6 + Math.random() * 0.8;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `
+      attribute float size;
+      attribute vec3 color;
+      varying vec3 vColor;
+      varying float vAlpha;
+      uniform float uTime;
+      void main() {
+        vColor = color;
+        vec3 p = position;
+        float offset = sin(uTime * 0.4 + p.x * 0.05 + p.y * 0.04) * 0.8;
+        p.y += offset;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_PointSize = size * (300.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+        vAlpha = 0.4 + 0.6 * (sin(uTime * 0.3 + p.z * 0.1) * 0.5 + 0.5);
+      }
+    `,
+    fragmentShader: `
+      varying vec3 vColor;
+      varying float vAlpha;
+      void main() {
+        float d = length(gl_PointCoord - 0.5);
+        if(d > 0.5) discard;
+        float alpha = smoothstep(0.5, 0.0, d) * vAlpha;
+        gl_FragColor = vec4(vColor, alpha);
+      }
+    `,
+    transparent: true, depthWrite: false, vertexColors: true,
+  });
+
+  const points = new THREE.Points(geo, mat);
+  scene.add(points);
+
+  const lineGeo = new THREE.BufferGeometry();
+  const linePos = [];
+  for (let i = 0; i < 80; i++) {
+    const a = Math.floor(Math.random() * count);
+    const b = Math.floor(Math.random() * count);
+    linePos.push(pos[a*3], pos[a*3+1], pos[a*3+2], pos[b*3], pos[b*3+1], pos[b*3+2]);
+  }
+  lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(linePos), 3));
+  const lineMat = new THREE.LineBasicMaterial({ color: 0x0d4f6e, transparent: true, opacity: 0.15 });
+  scene.add(new THREE.LineSegments(lineGeo, lineMat));
+
+  let mouseX = 0, mouseY = 0;
+  document.addEventListener('mousemove', e => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  const clock = new THREE.Clock();
+  (function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    mat.uniforms.uTime.value = t;
+    points.rotation.y = t * 0.04 + mouseX * 0.15;
+    points.rotation.x = mouseY * 0.08;
+    renderer.render(scene, camera);
+  })();
+})();
+
+gsap.registerPlugin(ScrollTrigger);
+
+const tl = gsap.timeline({ delay: 0.3 });
+tl.to('.hero-eyebrow', { opacity: 1, duration: 0.8, ease: 'power2.out' })
+  .to('.hero-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, '-=0.4')
+  .to('.hero-desc', { opacity: 1, duration: 0.7, ease: 'power2.out' }, '-=0.5')
+  .to('.hero-actions', { opacity: 1, duration: 0.7, ease: 'power2.out' }, '-=0.4');
+
+ScrollTrigger.create({
+  start: 'top -50',
+  onUpdate: self => document.getElementById('nav').classList.toggle('scrolled', self.progress > 0)
+});
+
+gsap.utils.toArray('.reveal').forEach(el => {
+  gsap.to(el, {
+    scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
+    opacity: 1, y: 0, duration: 0.8, ease: 'power3.out'
+  });
+});
+
+ScrollTrigger.create({
+  trigger: '.disaster-grid',
+  start: 'top 80%',
+  onEnter: () => {
+    document.querySelectorAll('.risk-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }
+});
+
+function animCounters() {
+  document.querySelectorAll('.counter').forEach(el => {
+    const target = parseFloat(el.dataset.target);
+    const isFloat = target % 1 !== 0;
+    let start = 0;
+    const step = target / 60;
+    const timer = setInterval(() => {
+      start += step;
+      if (start >= target) { start = target; clearInterval(timer); }
+      el.textContent = isFloat ? start.toFixed(1) : Math.floor(start);
+    }, 16);
+  });
+}
+ScrollTrigger.create({ trigger: '.metrics-section', start: 'top 80%', onEnter: animCounters });
+
+function fluctuate() {
+  const ids = ['risk-cyclone','risk-heat','risk-flood','risk-blizzard','risk-eq'];
+  const bases = [87, 78, 71, 54, 32];
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const v = bases[i] + Math.floor((Math.random() - 0.5) * 5);
+      el.innerHTML = v + '<span style="font-size:1.2rem;color:var(--c-muted)">%</span>';
+    }
+  });
+}
+setInterval(fluctuate, 8000);
+</script>
 </body>
-
 </html>
