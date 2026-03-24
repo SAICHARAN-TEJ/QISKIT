@@ -1,4 +1,4 @@
-/* Dashboard JS — ResQbit */
+/* Dashboard JS - QiskitML */
 
 'use strict';
 
@@ -7,9 +7,7 @@ let disasterMarker = null;
 let currentMarker = null;
 let currentPrediction = null;
 
-// ─── Gauge helpers ────────────────────────────────────────────
 function setGauge(needleId, valueId, percent) {
-    // Needle sweeps from -90deg (0%) to +90deg (100%)
     const angle = -90 + (percent / 100) * 180;
     const needle = document.getElementById(needleId);
     const valueEl = document.getElementById(valueId);
@@ -17,7 +15,6 @@ function setGauge(needleId, valueId, percent) {
     if (valueEl) valueEl.textContent = `${Math.round(percent)}%`;
 }
 
-// ─── Toast ────────────────────────────────────────────────────
 function showToast(msg, duration = 3000) {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -27,7 +24,6 @@ function showToast(msg, duration = 3000) {
     toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
-// ─── Map setup ────────────────────────────────────────────────
 function initMap(lat = 51.5074, lon = -0.1278) {
     if (!document.getElementById('map')) return;
 
@@ -47,18 +43,15 @@ function updateMap(current, disaster, dtype) {
     if (currentMarker) map.removeLayer(currentMarker);
     if (disasterMarker) map.removeLayer(disasterMarker);
 
-    // Current position marker (white)
     currentMarker = L.circleMarker([current.lat, current.lon], {
-        radius: 10, fillColor: '#ffffff', color: '#00000040', weight: 2, fillOpacity: 1
+        radius: 10, fillColor: '#00d4ff', color: '#ffffff', weight: 2, fillOpacity: 1
     }).addTo(map).bindPopup('Your Location');
 
-    // Disaster position marker (colored by severity)
     const colour = getDisasterColour(dtype);
     disasterMarker = L.circleMarker([disaster.lat, disaster.lon], {
-        radius: 14, fillColor: colour, color: '#ffffff30', weight: 2, fillOpacity: 0.85
+        radius: 14, fillColor: colour, color: '#ffffff', weight: 2, fillOpacity: 0.85
     }).addTo(map).bindPopup(`Disaster Zone: ${dtype}`).openPopup();
 
-    // Draw a line between them
     if (map._lineLayer) map.removeLayer(map._lineLayer);
     map._lineLayer = L.polyline([[current.lat, current.lon], [disaster.lat, disaster.lon]], {
         color: colour, weight: 2, opacity: 0.5, dashArray: '6, 8'
@@ -70,16 +63,27 @@ function updateMap(current, disaster, dtype) {
 function getDisasterColour(dtype) {
     const colours = {
         heat_wave: '#ff8a76',
-        cyclone: '#7a3ee8',
-        flood: '#00d2ff',
+        cyclone: '#7b2fff',
+        flood: '#00d4ff',
         blizzard: '#a5c8ff',
         earthquake: '#ffd166',
-        normal: '#3af2a6'
+        normal: '#00ffa3'
     };
     return colours[dtype] || '#ffffff';
 }
 
-// ─── Prediction ───────────────────────────────────────────────
+function updateQuantumMetrics(metrics) {
+    if (!metrics) return;
+    
+    const entropyEl = document.getElementById('entropyValue');
+    const purityEl = document.getElementById('purityValue');
+    const advantageEl = document.getElementById('advantageValue');
+    
+    if (entropyEl) entropyEl.textContent = (metrics.entropy || 0).toFixed(4);
+    if (purityEl) purityEl.textContent = (metrics.purity || 0).toFixed(4);
+    if (advantageEl) advantageEl.textContent = (metrics.advantage_score || 0).toFixed(4);
+}
+
 async function runPrediction() {
     const city = document.getElementById('cityInput')?.value?.trim() || 'London';
     if (!city) return;
@@ -105,7 +109,6 @@ async function runPrediction() {
         currentPrediction = data;
         updateUI(data);
 
-        // Only fetch route if evacuation needed
         if (data.evacuation_needed) {
             await fetchRoute(data);
         } else {
@@ -122,12 +125,10 @@ async function runPrediction() {
 
 function updateUI(data) {
     const { risk_percentage, risk_level, disaster_type, evacuation_needed,
-        current_position, disaster_location, sensor_data, timestamp } = data;
+        current_position, disaster_location, sensor_data, timestamp, quantum_metrics } = data;
 
-    // Gauge
     setGauge('gaugeNeedle', 'gaugeValue', risk_percentage);
 
-    // Risk info
     setEl('disasterType', formatDisasterType(disaster_type));
     const evacEl = document.getElementById('evacNeeded');
     if (evacEl) {
@@ -135,7 +136,6 @@ function updateUI(data) {
         evacEl.className = 'risk-block-value ' + (evacuation_needed ? 'required' : 'not-required');
     }
 
-    // Sensors
     if (sensor_data) {
         setEl('tempValue', `${sensor_data.temperature.toFixed(1)}°C`);
         setEl('pressureValue', `${sensor_data.pressure.toFixed(0)} hPa`);
@@ -143,7 +143,16 @@ function updateUI(data) {
         setEl('windValue', `${sensor_data.wind_speed.toFixed(1)} m/s`);
     }
 
-    // Status card
+    if (quantum_metrics) {
+        updateQuantumMetrics(quantum_metrics);
+    }
+
+    const quantumStatus = document.getElementById('quantumStatus');
+    if (quantumStatus) {
+        quantumStatus.textContent = data.quantum_enabled ? 'Active' : 'Fallback';
+        quantumStatus.className = data.quantum_enabled ? 'status-pill pill-success' : 'status-pill pill-warning';
+    }
+
     setEl('lastUpdate', formatTime(timestamp));
     const riskBadge = document.getElementById('riskLevelBadge');
     if (riskBadge) {
@@ -151,7 +160,6 @@ function updateUI(data) {
         riskBadge.style.color = getRiskColour(risk_level);
     }
 
-    // Map
     initMap(current_position.lat, current_position.lon);
     updateMap(current_position, disaster_location, disaster_type);
 }
@@ -178,10 +186,9 @@ async function fetchRoute(data) {
     } catch { /* silent */ }
 }
 
-// ─── Alerts ───────────────────────────────────────────────────
 function sendAlerts() {
     if (!currentPrediction) return;
-    showToast('Alert dispatched to response teams.');
+    showToast('Alert dispatched via quantum analysis pipeline.');
     const btn = document.getElementById('sendAlertsBtn');
     if (btn) {
         btn.textContent = '✓ Sent';
@@ -193,16 +200,6 @@ function sendAlerts() {
     }
 }
 
-// ─── Logout ───────────────────────────────────────────────────
-async function logout() {
-    try {
-        await fetch('/api/logout', { method: 'POST' });
-    } finally {
-        window.location.href = '/';
-    }
-}
-
-// ─── Helpers ──────────────────────────────────────────────────
 function setEl(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
@@ -214,7 +211,7 @@ function formatDisasterType(t) {
 }
 
 function getRiskColour(level) {
-    const map = { LOW: '#3af2a6', MEDIUM: '#ffd166', HIGH: '#ff8a76', CRITICAL: '#ff3366' };
+    const map = { LOW: '#00ffa3', MEDIUM: '#ffaa00', HIGH: '#ff8a76', CRITICAL: '#ff4466' };
     return map[level] || '#ffffff';
 }
 
@@ -229,9 +226,7 @@ function capitalize(s) {
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-// ─── Init ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
-    // Auto-run analysis on page load
     runPrediction();
 });

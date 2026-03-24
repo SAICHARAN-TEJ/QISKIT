@@ -1,41 +1,45 @@
-/* ResQbit — Framer-Inspired Design System (Light & Warm) */
+/* QiskitML Design System - Quantum Theme */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    /* Light warm base */
-    --bg-base: #FAFAF8;
-    --bg-card: #FFFFFF;
-    --bg-subtle: #F5F3F0;
-    --bg-hover: #EEEDEA;
+    /* Quantum-inspired dark theme */
+    --bg-base: #0a0a0f;
+    --bg-card: #12121a;
+    --bg-subtle: #1a1a24;
+    --bg-hover: #222230;
 
-    /* Earthy accents */
-    --accent: #E86A33;
-    --accent-hover: #D45A24;
-    --accent-soft: rgba(232, 106, 51, 0.08);
-    --accent-ring: rgba(232, 106, 51, 0.20);
+    /* Quantum accent colors */
+    --accent: #00d4ff;
+    --accent-hover: #00b8e6;
+    --accent-soft: rgba(0, 212, 255, 0.1);
+    --accent-ring: rgba(0, 212, 255, 0.25);
+
+    /* Quantum secondary colors */
+    --accent-secondary: #7b2fff;
+    --accent-tertiary: #00ffa3;
 
     /* Text */
-    --text-primary: #1A1A1A;
-    --text-secondary: #5C5C5C;
-    --text-muted: #9B9B9B;
-    --text-on-accent: #FFFFFF;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --text-muted: #606070;
+    --text-on-accent: #0a0a0f;
 
     /* Borders */
-    --border: #EAEAE8;
-    --border-hover: #D5D5D2;
+    --border: #2a2a3a;
+    --border-hover: #3a3a4a;
 
     /* Status */
-    --status-safe: #22C55E;
-    --status-warning: #F59E0B;
-    --status-danger: #EF4444;
-    --status-critical: #DC2626;
+    --status-safe: #00ffa3;
+    --status-warning: #ffaa00;
+    --status-danger: #ff4466;
+    --status-critical: #ff2255;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08);
-    --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.10);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
 
     /* Radii */
     --radius-sm: 10px;
@@ -65,24 +69,19 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Warm background — no orbs, no noise, just clean */
 .app-background {
     display: none;
 }
 
 /* Typography */
-h1,
-h2,
-h3,
-h4 {
+h1, h2, h3, h4 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: -0.03em;
     color: var(--text-primary);
     line-height: 1.15;
 }
 
-/* ========== CARDS ========== */
-
+/* Cards */
 .glass-panel,
 .glass-card {
     background: var(--bg-card);
@@ -100,14 +99,7 @@ h4 {
     transform: translateY(-4px);
 }
 
-/* No pseudo-element top bar needed */
-.glass-panel::before,
-.glass-card::before {
-    display: none;
-}
-
-/* ========== INPUTS ========== */
-
+/* Inputs */
 .glass-input {
     background: var(--bg-subtle);
     border: 1.5px solid var(--border);
@@ -131,8 +123,7 @@ h4 {
     color: var(--text-muted);
 }
 
-/* ========== BUTTONS ========== */
-
+/* Buttons */
 .btn-glass {
     background: var(--bg-card);
     border: 1.5px solid var(--border);
@@ -157,10 +148,6 @@ h4 {
     box-shadow: var(--shadow-sm);
 }
 
-.btn-glass:active {
-    transform: translateY(0);
-}
-
 .btn-primary-glass {
     background: var(--accent);
     color: var(--text-on-accent);
@@ -170,12 +157,11 @@ h4 {
 .btn-primary-glass:hover {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
-    box-shadow: 0 4px 16px rgba(232, 106, 51, 0.25);
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
     transform: translateY(-1px);
 }
 
-/* ========== STATUS LED ========== */
-
+/* Status LED */
 .status-led {
     width: 8px;
     height: 8px;
@@ -185,7 +171,13 @@ h4 {
 
 .status-led.online {
     background: var(--status-safe);
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 10px rgba(0, 255, 163, 0.5);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 .status-led.warning {
@@ -196,24 +188,22 @@ h4 {
     background: var(--text-muted);
 }
 
-/* ========== GRADIENT TEXT ========== */
-
+/* Gradient Text */
 .text-gradient {
-    background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+    background: linear-gradient(135deg, var(--text-primary), var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-accent {
-    background: linear-gradient(135deg, var(--accent), #E84D33);
+    background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* ========== SIDEBAR ========== */
-
+/* Sidebar */
 .nav-sidebar {
     width: 280px;
     height: 100vh;
@@ -253,8 +243,7 @@ h4 {
     font-weight: 600;
 }
 
-/* ========== LAYOUT ========== */
-
+/* Layout */
 .main-layout {
     display: flex;
     min-height: 100vh;
@@ -273,8 +262,7 @@ h4 {
     gap: 20px;
 }
 
-/* ========== GAUGE ========== */
-
+/* Gauge */
 .analog-gauge {
     width: 150px;
     height: 150px;
@@ -292,7 +280,7 @@ h4 {
     bottom: 8px;
     border-radius: 50%;
     background: conic-gradient(from 225deg, var(--status-safe) 0deg, var(--status-warning) 90deg, var(--status-danger) 180deg, var(--status-critical) 270deg, transparent 270deg);
-    opacity: 0.12;
+    opacity: 0.15;
 }
 
 .gauge-inner {
@@ -348,21 +336,10 @@ h4 {
     background: var(--accent);
     border-radius: 50%;
     z-index: 10;
-    box-shadow: 0 0 0 3px var(--bg-card);
+    box-shadow: 0 0 10px var(--accent);
 }
 
-/* ========== CONTROL PANEL ========== */
-
-.control-panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    margin-bottom: 24px;
-}
-
-/* ========== FORM ========== */
-
+/* Form */
 .form-group {
     margin-bottom: 20px;
 }
@@ -375,40 +352,17 @@ h4 {
     margin-bottom: 8px;
 }
 
-/* ========== UTILITIES ========== */
+/* Utilities */
+.mb-6 { margin-bottom: 24px; }
+.mt-4 { margin-top: 16px; }
+.p-6 { padding: 28px; }
+.w-full { width: 100%; }
+.flex { display: flex; }
 
-.mb-6 {
-    margin-bottom: 24px;
-}
+/* Custom Cursor */
+body { cursor: none; }
 
-.mt-4 {
-    margin-top: 16px;
-}
-
-.p-6 {
-    padding: 28px;
-}
-
-.w-full {
-    width: 100%;
-}
-
-.flex {
-    display: flex;
-}
-
-/* ========== CUSTOM CURSOR ========== */
-
-body {
-    cursor: none;
-    /* Hide default cursor */
-}
-
-a,
-button,
-input {
-    cursor: none;
-}
+a, button, input { cursor: none; }
 
 .custom-cursor {
     position: fixed;
@@ -430,7 +384,7 @@ input {
     left: 0;
     width: 32px;
     height: 32px;
-    border: 1px solid rgba(232, 106, 51, 0.4);
+    border: 1px solid rgba(0, 212, 255, 0.4);
     border-radius: 50%;
     pointer-events: none;
     z-index: 9998;
@@ -446,104 +400,68 @@ input {
 .custom-cursor-follower.hover {
     width: 48px;
     height: 48px;
-    background: rgba(232, 106, 51, 0.1);
+    background: rgba(0, 212, 255, 0.1);
     border-color: var(--accent);
     backdrop-filter: blur(2px);
 }
 
-/* ========== GSAP ANIMATION UTILITIES ========== */
-
-/* Lenis recommended css */
-html.lenis,
-html.lenis body {
-    height: auto;
-}
-
-.lenis.lenis-smooth {
-    scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-    overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-    overflow: hidden;
-}
-
-.lenis.lenis-smooth iframe {
-    pointer-events: none;
-}
-
-/* SplitType Masking */
-.char,
-.word,
-.line {
-    display: inline-block;
-}
-
-.line {
-    overflow: hidden;
-    /* This masks the characters as they translate Y */
-}
-
-/* ========== SILVER ELECTRICAL ANIMATION ========== */
-
-@property --angle {
-    syntax: "<angle>";
-    initial-value: 0deg;
-    inherits: false;
-}
-
-.silver-electric-border {
+/* Quantum Border Animation */
+.quantum-border {
     position: relative;
     border-radius: var(--radius-lg);
     z-index: 1;
 }
 
-.silver-electric-border::before,
-.silver-electric-border::after {
+.quantum-border::before,
+.quantum-border::after {
     content: "";
     position: absolute;
     inset: -2px;
     z-index: -1;
     border-radius: inherit;
-    /* Electric silver/white gradient looping around */
-    background: conic-gradient(from var(--angle),
+    background: conic-gradient(from var(--angle, 0deg),
             transparent 70%,
-            rgba(255, 255, 255, 0.2) 80%,
-            #fff 90%,
-            #e0e0e0 95%,
-            rgba(255, 255, 255, 0) 100%);
-    animation: autoRotate 4s linear infinite;
+            rgba(0, 212, 255, 0.3) 80%,
+            var(--accent) 90%,
+            var(--accent-secondary) 95%,
+            transparent 100%);
+    animation: quantumRotate 4s linear infinite;
 }
 
-.silver-electric-border::after {
-    filter: blur(10px);
+.quantum-border::after {
+    filter: blur(15px);
     opacity: 0.6;
 }
 
-@keyframes autoRotate {
-    0% {
-        --angle: 0deg;
-    }
-
-    100% {
-        --angle: 360deg;
-    }
-}
-
-/* Ensure inner content of these cards maintains its background */
-.silver-electric-inner {
-    background: rgba(255, 255, 255, 0.75);
+.quantum-inner {
+    background: rgba(18, 18, 26, 0.9);
     backdrop-filter: blur(12px);
     border-radius: var(--radius-lg);
     height: 100%;
     width: 100%;
 }
 
-/* ========== RESPONSIVE ========== */
+.quantum-glow {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
 
+.quantum-icon {
+    color: var(--accent) !important;
+}
+
+@keyframes quantumRotate {
+    0% { --angle: 0deg; }
+    100% { --angle: 360deg; }
+}
+
+/* Quantum Spinner */
+.quantum-spinner {
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent);
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);

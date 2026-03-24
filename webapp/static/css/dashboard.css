@@ -1,6 +1,4 @@
-/* Dashboard — Framer-Inspired Light Theme */
-
-/* ========== PAGE HEADER ========== */
+/* Dashboard - QiskitML Quantum Theme */
 
 .page-header {
     margin-bottom: 32px;
@@ -43,8 +41,6 @@
     font-size: 0.92rem;
 }
 
-/* ========== PREDICT BAR ========== */
-
 .predict-bar {
     padding: 18px 24px;
     border-radius: var(--radius-md);
@@ -70,8 +66,6 @@
     max-width: 400px;
     padding: 12px 16px;
 }
-
-/* ========== DASHBOARD GRID ========== */
 
 .dashboard-grid {
     display: grid;
@@ -99,8 +93,6 @@
     color: var(--text-muted);
     margin-bottom: 20px;
 }
-
-/* ========== GAUGE ========== */
 
 .gauge-container {
     display: flex;
@@ -142,8 +134,47 @@
     color: var(--status-safe);
 }
 
-/* ========== SENSORS ========== */
+/* Quantum Metrics */
+.quantum-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
 
+.quantum-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 12px;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.quantum-metric:hover {
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+}
+
+.metric-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.metric-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+}
+
+/* Sensors */
 .sensor-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -189,8 +220,7 @@
     font-weight: 600;
 }
 
-/* ========== MAP ========== */
-
+/* Map */
 .map-card {
     grid-column: span 2;
 }
@@ -202,8 +232,7 @@
     border: 1px solid var(--border);
 }
 
-/* ========== ROUTE CARD ========== */
-
+/* Route Card */
 .route-list {
     display: flex;
     flex-direction: column;
@@ -232,8 +261,7 @@
     color: var(--text-primary);
 }
 
-/* ========== STATUS ========== */
-
+/* Status */
 .status-list {
     display: flex;
     flex-direction: column;
@@ -269,25 +297,24 @@
 }
 
 .pill-success {
-    background: rgba(34, 197, 94, 0.08);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    background: rgba(0, 255, 163, 0.1);
+    border: 1px solid rgba(0, 255, 163, 0.3);
     color: var(--status-safe);
 }
 
 .pill-warning {
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.3);
     color: var(--status-warning);
 }
 
 .pill-danger {
-    background: rgba(239, 68, 68, 0.08);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: rgba(255, 68, 102, 0.1);
+    border: 1px solid rgba(255, 68, 102, 0.3);
     color: var(--status-danger);
 }
 
-/* ========== SIDEBAR COMPONENTS ========== */
-
+/* Sidebar */
 .nav-logo {
     display: flex;
     align-items: center;
@@ -304,7 +331,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: var(--text-on-accent);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
 }
 
 .nav-logo-text {
@@ -365,15 +393,14 @@
     margin-top: auto;
 }
 
-/* ========== LOADING ========== */
-
+/* Loading */
 .load-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(250, 250, 248, 0.7);
+    background: rgba(10, 10, 15, 0.85);
     backdrop-filter: blur(8px);
     z-index: 500;
     display: flex;
@@ -396,13 +423,10 @@
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
-/* ========== TOAST ========== */
-
+/* Toast */
 .toast {
     position: fixed;
     bottom: 32px;
@@ -426,8 +450,7 @@
     opacity: 1;
 }
 
-/* ========== RESPONSIVE ========== */
-
+/* Responsive */
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: repeat(2, 1fr);

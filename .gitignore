@@ -1,9 +1,50 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Project specific
+webapp/*.db
+*.log
+logs/
+
+# Quantum
+.qiskit/
+
+# Planning (optional - uncomment if you don't want planning docs in git)
+# .planning/
+
+# Python
 build/
 develop-eggs/
 dist/
@@ -19,31 +60,15 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-venv/
-.venv/
-ENV/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Project specific
-webapp/resqbit.db
-*.log
+# Coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/

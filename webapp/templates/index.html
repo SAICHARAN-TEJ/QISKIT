@@ -4,59 +4,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ResQbit — Real-time quantum-inspired disaster prediction and evacuation routing.">
-    <title>ResQbit | Disaster Response</title>
+    <meta name="description" content="QiskitML - Quantum Machine Learning Disaster Prediction System powered by Qiskit.">
+    <title>QiskitML | Quantum ML Disaster Prediction</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}?v=3">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}?v=4">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v=4">
 </head>
 
 <body>
-    <!-- Custom Cursor -->
     <div class="custom-cursor"></div>
     <div class="custom-cursor-follower"></div>
 
     <div class="app-background"></div>
 
-    <!-- Navigation -->
     <nav class="landing-nav" id="mainNav">
         <div class="nav-container">
             <div class="nav-brand">
-                <div class="brand-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                <div class="brand-icon quantum-glow">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
                     </svg>
                 </div>
-                <span class="brand-name">ResQbit</span>
+                <span class="brand-name">QiskitML</span>
             </div>
             <div class="nav-links">
-                <a href="#how-it-works" class="nav-link">How it Works</a>
+                <a href="#quantum-tech" class="nav-link">Quantum Technology</a>
                 <a href="#features" class="nav-link">Features</a>
-                <a href="#security" class="nav-link">Security</a>
-                <a href="/dashboard" class="btn-glass btn-primary-glass">Enter System</a>
+                <a href="#architecture" class="nav-link">Architecture</a>
+                <a href="/dashboard" class="btn-glass btn-primary-glass">Launch System</a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero -->
     <section class="hero-section">
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="status-led online"></span>
-                System Online · Real-time Monitoring
+                Quantum ML Powered · IBM Qiskit
             </div>
             <h1 class="hero-title">
-                Predict.<br>
-                <span class="text-gradient-accent">Respond.</span><br>
-                Protect.
+                Disaster Prediction<br>
+                <span class="text-gradient-accent">Quantum Enhanced.</span>
             </h1>
             <p class="hero-description">
-                Quantum-inspired disaster prediction using live sensor data. Know what's coming before it's too late.
+                Leverage quantum computing and machine learning for unprecedented disaster prediction accuracy. Built on IBM Qiskit for real quantum advantage.
             </p>
             <div class="hero-actions">
                 <a href="/dashboard" class="btn-glass btn-primary-glass btn-large" style="text-decoration: none;">
@@ -68,234 +64,228 @@
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
-                    <span class="stat-value">99.9%</span>
-                    <span class="stat-label">Accuracy</span>
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Quantum Qubits</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-value">&lt;50ms</span>
-                    <span class="stat-label">Response</span>
+                    <span class="stat-value">ZZ</span>
+                    <span class="stat-label">Feature Map</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-value">100%</span>
-                    <span class="stat-label">Open Source</span>
+                    <span class="stat-value">VQC</span>
+                    <span class="stat-label">Architecture</span>
                 </div>
             </div>
         </div>
 
-        <!-- Hero Visual -->
-        <div class="hero-visual silver-electric-border">
-            <div class="dashboard-preview silver-electric-inner">
+        <div class="hero-visual quantum-border">
+            <div class="dashboard-preview quantum-inner">
                 <div class="preview-header">
                     <div class="preview-dots">
                         <span></span><span></span><span></span>
                     </div>
-                    <span class="preview-title">Live Command Center</span>
+                    <span class="preview-title">Quantum ML Pipeline</span>
                 </div>
                 <div class="preview-content">
-                    <div class="preview-gauge">
-                        <div class="analog-gauge">
-                            <div class="gauge-ring"></div>
-                            <div class="gauge-inner">
-                                <span class="gauge-value" id="heroGaugeValue">11%</span>
-                                <span class="gauge-label">Risk Level</span>
-                            </div>
-                            <div class="gauge-needle" id="heroGaugeNeedle"
-                                style="transform: translateX(-50%) rotate(-76deg);"></div>
-                            <div class="gauge-center-dot"></div>
+                    <div class="quantum-circuit-preview">
+                        <div class="circuit-layer">
+                            <span class="layer-label">Input</span>
+                            <div class="qubit-line">|0⟩</div>
+                            <div class="qubit-line">|0⟩</div>
+                            <div class="qubit-line">|0⟩</div>
+                            <div class="qubit-line">|0⟩</div>
+                        </div>
+                        <div class="circuit-layer">
+                            <span class="layer-label">Feature Map</span>
+                            <div class="gate h-gate">H</div>
+                            <div class="gate h-gate">H</div>
+                            <div class="gate h-gate">H</div>
+                            <div class="gate h-gate">H</div>
+                        </div>
+                        <div class="circuit-layer">
+                            <span class="layer-label">Entangle</span>
+                            <div class="qubit-line">─●─</div>
+                            <div class="qubit-line">─●─</div>
+                            <div class="qubit-line">─●─</div>
+                            <div class="qubit-line">─</div>
+                        </div>
+                        <div class="circuit-layer">
+                            <span class="layer-label">Measure</span>
+                            <div class="gate measure">M</div>
+                            <div class="gate measure">M</div>
+                            <div class="gate measure">M</div>
+                            <div class="gate measure">M</div>
                         </div>
                     </div>
                     <div class="preview-stats">
                         <div class="preview-stat">
-                            <span class="preview-stat-label">Temperature</span>
-                            <span class="preview-stat-value">22.5°C</span>
+                            <span class="preview-stat-label">Entropy</span>
+                            <span class="preview-stat-value" id="heroEntropy">0.82</span>
                         </div>
                         <div class="preview-stat">
-                            <span class="preview-stat-label">Pressure</span>
-                            <span class="preview-stat-value">1012 hPa</span>
-                        </div>
-                        <div class="preview-stat">
-                            <span class="preview-stat-label">Humidity</span>
-                            <span class="preview-stat-value">65%</span>
-                        </div>
-                        <div class="preview-stat">
-                            <span class="preview-stat-label">Wind</span>
-                            <span class="preview-stat-value">5.2 m/s</span>
+                            <span class="preview-stat-label">Purity</span>
+                            <span class="preview-stat-value" id="heroPurity">0.94</span>
                         </div>
                     </div>
                 </div>
                 <div class="preview-status">
                     <span class="status-led online"></span>
-                    System Operational
+                    Quantum Backend Connected
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- How it Works -->
-    <section id="how-it-works" class="hiw-section">
+    <section id="quantum-tech" class="hiw-section">
         <div class="section-header reveal">
-            <h2 class="section-title text-gradient">How It Works</h2>
-            <p class="section-subtitle">Three steps from data to safety.</p>
+            <h2 class="section-title text-gradient">Quantum Technology Stack</h2>
+            <p class="section-subtitle">Powered by IBM Qiskit for real quantum computing capabilities.</p>
         </div>
         <div class="hiw-steps">
             <div class="hiw-step glass-card reveal">
                 <div class="hiw-number">01</div>
-                <h3>Ingest</h3>
-                <p>Real-time sensor readings — temperature, pressure, humidity, wind — feed into our analysis pipeline
-                    continuously.</p>
+                <h3>ZZFeatureMap</h3>
+                <p>Second-order Pauli-Z entangling feature map encodes environmental data into quantum states, capturing complex feature correlations.</p>
             </div>
             <div class="hiw-connector"></div>
             <div class="hiw-step glass-card reveal" style="animation-delay: 0.15s;">
                 <div class="hiw-number">02</div>
-                <h3>Predict</h3>
-                <p>Our quantum-inspired engine classifies threats across six disaster categories with 99.9% accuracy.
-                </p>
+                <h3>Variational Circuits</h3>
+                <p>Parameterized quantum circuits learn disaster patterns through hybrid quantum-classical optimization.</p>
             </div>
             <div class="hiw-connector"></div>
             <div class="hiw-step glass-card reveal" style="animation-delay: 0.3s;">
                 <div class="hiw-number">03</div>
-                <h3>Respond</h3>
-                <p>Evacuation routes are computed and alerts dispatched instantly so first responders can act.</p>
+                <h3>Quantum Kernels</h3>
+                <p>Quantum-enhanced kernel methods compute similarity in high-dimensional Hilbert space.</p>
             </div>
         </div>
     </section>
 
-    <!-- Features -->
     <section id="features" class="features-section">
         <div class="section-header reveal">
-            <h2 class="section-title">Powerful by Design</h2>
-            <p class="section-subtitle">Everything you need, nothing you don't.</p>
+            <h2 class="section-title">Quantum ML Features</h2>
+            <p class="section-subtitle">Cutting-edge quantum computing meets disaster prediction.</p>
         </div>
         <div class="features-grid">
             <div class="feature-card glass-card reveal">
-                <div class="feature-icon">
+                <div class="feature-icon quantum-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07" />
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83"/>
                     </svg>
                 </div>
-                <h3>Quantum Algorithm</h3>
-                <p>Quantum-inspired optimization for the fastest, most accurate evacuation routes.</p>
+                <h3>Quantum Feature Encoding</h3>
+                <p>ZZFeatureMap captures non-linear feature correlations impossible in classical models.</p>
             </div>
             <div class="feature-card glass-card reveal" style="animation-delay: 0.1s;">
-                <div class="feature-icon">
+                <div class="feature-icon quantum-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 6v6l4 2" />
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                 </div>
-                <h3>Real-Time Data</h3>
-                <p>Continuously updated sensor streams with millisecond latency.</p>
+                <h3>VQC Architecture</h3>
+                <p>Variational Quantum Classifier combines quantum processing with classical optimization.</p>
             </div>
             <div class="feature-card glass-card reveal" style="animation-delay: 0.2s;">
-                <div class="feature-icon">
+                <div class="feature-icon quantum-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-                        <circle cx="12" cy="10" r="3" />
+                        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
                     </svg>
                 </div>
-                <h3>Smart Routing</h3>
-                <p>Disaster-type-aware routes that keep you safe on the fastest path out.</p>
+                <h3>Entanglement</h3>
+                <p>Quantum entanglement enables complex pattern recognition across disaster indicators.</p>
             </div>
             <div class="feature-card glass-card reveal" style="animation-delay: 0.3s;">
-                <div class="feature-icon">
+                <div class="feature-icon quantum-icon">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                        <path d="M13.73 21a2 2 0 01-3.46 0" />
+                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 01-3.46 0"/>
                     </svg>
                 </div>
-                <h3>Instant Alerts</h3>
-                <p>Multi-channel notification system keeps your team informed the moment risk escalates.</p>
+                <h3>Real-time Alerts</h3>
+                <p>Instant notifications via Discord and Email when quantum analysis detects threats.</p>
             </div>
         </div>
     </section>
 
-    <!-- Security -->
-    <section id="security" class="security-section">
+    <section id="architecture" class="security-section">
         <div class="section-inner">
             <div class="section-header reveal">
-                <h2 class="section-title">Built with Trust</h2>
-                <p class="section-subtitle">Enterprise-grade security at every layer.</p>
+                <h2 class="section-title">System Architecture</h2>
+                <p class="section-subtitle">Hybrid quantum-classical pipeline for disaster prediction.</p>
             </div>
             <div class="security-grid">
                 <div class="security-item reveal">
-                    <div class="security-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" />
-                            <path d="M7 11V7a5 5 0 0110 0v4" />
+                    <div class="security-icon quantum-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <path d="M3 9h18M9 21V9"/>
                         </svg>
                     </div>
-                    <h4>PBKDF2 Encryption</h4>
-                    <p>100k iterations of password hashing</p>
+                    <h4>Data Layer</h4>
+                    <p>Weather sensors + Jena climate dataset</p>
                 </div>
                 <div class="security-item reveal" style="animation-delay: 0.1s;">
-                    <div class="security-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <div class="security-icon quantum-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v4M12 19v4"/>
                         </svg>
                     </div>
-                    <h4>Rate Limiting</h4>
-                    <p>Brute-force and abuse protection</p>
+                    <h4>Quantum Encoding</h4>
+                    <p>ZZFeatureMap quantum state preparation</p>
                 </div>
                 <div class="security-item reveal" style="animation-delay: 0.2s;">
-                    <div class="security-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                            <polyline points="14,2 14,8 20,8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
+                    <div class="security-icon quantum-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
                         </svg>
                     </div>
-                    <h4>Audit Logging</h4>
-                    <p>Every action tracked and immutable</p>
+                    <h4>VQC Processing</h4>
+                    <p>Variational quantum circuit classification</p>
                 </div>
                 <div class="security-item reveal" style="animation-delay: 0.3s;">
-                    <div class="security-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <circle cx="12" cy="16" r="1" fill="currentColor" />
+                    <div class="security-icon quantum-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <path d="M14 2v6h6"/>
                         </svg>
                     </div>
-                    <h4>Input Sanitization</h4>
-                    <p>XSS &amp; injection prevention built-in</p>
+                    <h4>Prediction Output</h4>
+                    <p>Risk assessment + evacuation routing</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="landing-footer">
         <div class="footer-content">
             <div class="footer-brand">
                 <div class="nav-brand">
-                    <div class="brand-icon small">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                    <div class="brand-icon small quantum-glow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v4M12 19v4"/>
                         </svg>
                     </div>
-                    <span class="brand-name" style="font-size:1.15rem;">ResQbit</span>
+                    <span class="brand-name" style="font-size:1.15rem;">QiskitML</span>
                 </div>
             </div>
-            <p class="footer-text">Open-source disaster response. Built on real science.</p>
-            <p class="footer-copyright">&copy; 2026 ResQbit. All rights reserved.</p>
+            <p class="footer-text">Quantum Machine Learning Disaster Prediction. Powered by IBM Qiskit.</p>
+            <p class="footer-copyright">© 2026 QiskitML. Built with Qiskit and Flask.</p>
         </div>
     </footer>
 
-
-
-    <!-- Animation Libraries -->
     <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="https://unpkg.com/split-type"></script>
 
-    <script src="{{ url_for('static', filename='js/landing.js') }}?v=2"></script>
+    <script src="{{ url_for('static', filename='js/landing.js') }}?v=4"></script>
 </body>
 
 </html>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | ResQbit</title>
+    <title>Dashboard | QiskitML</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -20,25 +20,24 @@
 
     <div class="main-layout">
 
-        <!-- Sidebar -->
         <nav class="nav-sidebar">
             <div class="nav-logo">
-                <div class="nav-logo-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                <div class="nav-logo-icon quantum-glow">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v4M12 19v4"/>
                     </svg>
                 </div>
-                <span class="nav-logo-text">ResQbit</span>
+                <span class="nav-logo-text">QiskitML</span>
             </div>
 
             <div class="nav-user">
-                <div class="user-avatar">{{ username[0]|upper if username else 'U' }}</div>
+                <div class="user-avatar">{{ username[0]|upper if username else 'Q' }}</div>
                 <div class="user-info">
-                    <span class="user-name">{{ username or 'User' }}</span>
+                    <span class="user-name">{{ username or 'Quantum User' }}</span>
                     <span class="user-status">
                         <span class="status-led online"></span>
-                        Active
+                        Quantum Active
                     </span>
                 </div>
             </div>
@@ -46,8 +45,7 @@
             <div class="nav-menu">
                 <a href="#" class="nav-item active" id="navDashboard">
                     <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="7" height="7" />
                             <rect x="14" y="3" width="7" height="7" />
                             <rect x="14" y="14" width="7" height="7" />
@@ -56,20 +54,18 @@
                     </span>
                     Dashboard
                 </a>
-                <a href="#predictions" class="nav-item" id="navPredictions">
+                <a href="#quantum" class="nav-item" id="navQuantum">
                     <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21.21 15.89A10 10 0 118 2.83" />
-                            <path d="M22 12A10 10 0 0012 2v10z" />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v4M12 19v4"/>
                         </svg>
                     </span>
-                    Predictions
+                    Quantum Stats
                 </a>
                 <a href="#alerts" class="nav-item" id="navAlerts">
                     <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
                             <path d="M13.73 21a2 2 0 01-3.46 0" />
                         </svg>
@@ -79,40 +75,35 @@
             </div>
         </nav>
 
-        <!-- Main Content -->
         <main class="content-area">
             <header class="page-header">
                 <div class="header-content">
                     <div>
-                        <h1 class="page-title">Command Center</h1>
-                        <p class="page-subtitle">Real-time disaster monitoring and response</p>
+                        <h1 class="page-title">Quantum ML Command Center</h1>
+                        <p class="page-subtitle">Disaster prediction powered by IBM Qiskit</p>
                     </div>
                     <div class="header-actions">
                         <div class="header-status" id="systemStatus">
                             <span class="status-led online"></span>
-                            <span>System Operational</span>
+                            <span>Quantum Backend Active</span>
                         </div>
                         <button class="btn-glass btn-primary-glass" id="analyzeBtn" onclick="runPrediction()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v4M12 19v4"/>
                             </svg>
                             Analyze
                         </button>
                     </div>
                 </div>
-                <!-- City Input -->
                 <div class="predict-bar glass-panel">
                     <label class="form-label" for="cityInput">Location</label>
                     <input type="text" class="glass-input" id="cityInput" placeholder="Enter city name…" value="London">
                 </div>
             </header>
 
-            <!-- Dashboard Grid -->
             <div class="dashboard-grid" id="mainGrid">
 
-                <!-- Risk Gauge Card -->
                 <div class="glass-card dash-card p-6" id="riskCard">
                     <div class="card-label">Risk Assessment</div>
                     <div class="gauge-container">
@@ -138,14 +129,34 @@
                     </div>
                 </div>
 
-                <!-- Sensor Readings Card -->
+                <div class="glass-card dash-card p-6" id="quantumCard">
+                    <div class="card-label">Quantum Metrics</div>
+                    <div class="quantum-metrics-grid">
+                        <div class="quantum-metric">
+                            <span class="metric-value" id="entropyValue">--</span>
+                            <span class="metric-label">Entropy</span>
+                        </div>
+                        <div class="quantum-metric">
+                            <span class="metric-value" id="purityValue">--</span>
+                            <span class="metric-label">Purity</span>
+                        </div>
+                        <div class="quantum-metric">
+                            <span class="metric-value" id="advantageValue">--</span>
+                            <span class="metric-label">Advantage</span>
+                        </div>
+                        <div class="quantum-metric">
+                            <span class="metric-value" id="qubitsValue">4</span>
+                            <span class="metric-label">Qubits</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="glass-card dash-card p-6" id="sensorCard">
                     <div class="card-label">Sensor Readings</div>
                     <div class="sensor-grid">
                         <div class="sensor-item">
                             <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" />
                                 </svg>
                             </div>
@@ -154,8 +165,7 @@
                         </div>
                         <div class="sensor-item">
                             <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10" />
                                     <path d="M12 6v6l4 2" />
                                 </svg>
@@ -165,8 +175,7 @@
                         </div>
                         <div class="sensor-item">
                             <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
                                 </svg>
                             </div>
@@ -175,10 +184,8 @@
                         </div>
                         <div class="sensor-item">
                             <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path
-                                        d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2" />
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2" />
                                 </svg>
                             </div>
                             <span class="sensor-value" id="windValue">--</span>
@@ -187,13 +194,11 @@
                     </div>
                 </div>
 
-                <!-- Map Card -->
-                <div class="glass-card dash-card p-6 map-card silver-electric-border" id="mapCard">
+                <div class="glass-card dash-card p-6 map-card quantum-border" id="mapCard">
                     <div class="card-label">Location Map</div>
-                    <div id="map" class="map-container silver-electric-inner"></div>
+                    <div id="map" class="map-container quantum-inner"></div>
                 </div>
 
-                <!-- Evacuation Route Card -->
                 <div class="glass-card dash-card p-6" id="routeCard" style="display:none;">
                     <div class="card-label">Evacuation Route</div>
                     <div class="route-list">
@@ -211,25 +216,23 @@
                         </div>
                     </div>
                     <button class="btn-glass btn-primary-glass w-full mt-4" id="sendAlertsBtn" onclick="sendAlerts()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
                         </svg>
                         Send Alerts
                     </button>
                 </div>
 
-                <!-- System Status Card -->
                 <div class="glass-card dash-card p-6" id="statusCard">
                     <div class="card-label">System Status</div>
                     <div class="status-list">
                         <div class="status-row">
-                            <span class="status-key">API</span>
-                            <span class="status-pill pill-success">Connected</span>
+                            <span class="status-key">Quantum ML</span>
+                            <span class="status-pill pill-success" id="quantumStatus">Connected</span>
                         </div>
                         <div class="status-row">
-                            <span class="status-key">Database</span>
-                            <span class="status-pill pill-success">Active</span>
+                            <span class="status-key">Backend</span>
+                            <span class="status-pill pill-success">Qiskit</span>
                         </div>
                         <div class="status-row">
                             <span class="status-key">Last Update</span>
@@ -242,15 +245,13 @@
                     </div>
                 </div>
 
-            </div><!-- /grid -->
-
-            <!-- Loading Overlay -->
-            <div class="load-overlay" id="loadOverlay" style="display:none;">
-                <div class="load-spinner"></div>
-                <p>Analyzing…</p>
             </div>
 
-            <!-- Toast notification -->
+            <div class="load-overlay" id="loadOverlay" style="display:none;">
+                <div class="load-spinner quantum-spinner"></div>
+                <p>Quantum Analysis Running...</p>
+            </div>
+
             <div class="toast" id="toast"></div>
 
         </main>
