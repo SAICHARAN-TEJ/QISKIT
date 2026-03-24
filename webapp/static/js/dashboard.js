@@ -227,6 +227,17 @@ function capitalize(s) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check for city in URL params
+    const params = new URLSearchParams(window.location.search);
+    const city = params.get('city');
+    const lat = params.get('lat');
+    const lon = params.get('lon');
+    
+    if (city) {
+        const cityInput = document.getElementById('cityInput');
+        if (cityInput) cityInput.value = city;
+    }
+    
     initMap();
     runPrediction();
 });

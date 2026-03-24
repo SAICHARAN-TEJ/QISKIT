@@ -288,17 +288,25 @@ class QuantumMLPredictor:
         else:
             return "normal", max(10.0, 30 - abs(temp - 15)), None
     
-    def predict(self, city: str = "London") -> dict:
+    def predict(self, city: str = "London", coords: tuple = None) -> dict:
         city = SecurityConfig.sanitize_input(city, 50)
         
-        sensor = self._get_sensor_data()
+        # Use provided coordinates or default
+        lat, lon = coords if coords else (51.5074, -0.1278)
+        
+        # Add small random offset for current position
+        current_lat = lat + np.random.uniform(-0.02, 0.02)
+        current_lon = lon + np.random.uniform(-0.02, 0.02)
+        
+        sensor = self._get_sensor_data(lat, lon)
         features = self._extract_features(sensor)
         
         disaster_type, risk, quantum_metrics = self._quantum_infer(features)
         risk_level = self._get_risk_level(risk)
-        lat, lon = self.LOCATIONS.get(disaster_type, (51.5074, -0.1278))
-        current_lat = lat + np.random.uniform(-0.05, 0.05)
-        current_lon = lon + np.random.uniform(-0.05, 0.05)
+        
+        # Disaster location is based on disaster type, but offset from input city
+        disaster_lat = lat + np.random.uniform(-0.1, 0.1)
+        disaster_lon = lon + np.random.uniform(-0.1, 0.1)
         
         return {
             "city": city,
@@ -307,7 +315,7 @@ class QuantumMLPredictor:
             "risk_level": risk_level,
             "evacuation_needed": risk >= 70.0,
             "current_position": {"lat": float(current_lat), "lon": float(current_lon)},
-            "disaster_location": {"lat": float(lat), "lon": float(lon)},
+            "disaster_location": {"lat": float(disaster_lat), "lon": float(disaster_lon)},
             "sensor_data": {
                 "pressure": float(sensor.get('pressure', 1013)),
                 "temperature": float(sensor.get('temperature', 20)),
@@ -321,10 +329,10 @@ class QuantumMLPredictor:
             "timestamp": datetime.now().isoformat()
         }
     
-    def _get_sensor_data(self) -> dict:
+    def _get_sensor_data(self, lat: float = 51.5074, lon: float = -0.1278) -> dict:
         if self.jena_data is not None:
             row = self.jena_data.iloc[-1]
-            return {
+            base = {
                 'pressure': row['p (mbar)'],
                 'temperature': row['T (degC)'],
                 'humidity': row['rh (%)'],
@@ -333,15 +341,26 @@ class QuantumMLPredictor:
                 'wind_direction': row['wd (deg)'],
                 'dew_point': row['Tdew (degC)']
             }
-        return {
-            'pressure': 1013.0,
-            'temperature': 20.0,
-            'humidity': 50.0,
-            'wind_speed': 5.0,
-            'max_wind_speed': 6.0,
-            'wind_direction': 180.0,
-            'dew_point': 10.0
-        }
+        else:
+            # Generate location-based sensor data
+            # Tropical cities are hotter, northern cities are colder
+            base_temp = 25 - abs(lat) * 0.3  # Temp decreases with latitude
+            base_humidity = 60 + (90 - abs(lat)) * 0.3  # Higher humidity near equator
+            base_pressure = 1013 - (abs(lat) / 90) * 15  # Pressure varies with latitude
+            
+            # Add randomization
+            import random
+            base = {
+                'pressure': base_pressure + random.uniform(-5, 5),
+                'temperature': base_temp + random.uniform(-3, 3),
+                'humidity': min(100, base_humidity + random.uniform(-10, 10)),
+                'wind_speed': random.uniform(2, 10),
+                'max_wind_speed': random.uniform(5, 15),
+                'wind_direction': random.uniform(0, 360),
+                'dew_point': base_temp * 0.6 + random.uniform(-2, 2)
+            }
+        
+        return base
 
 
 class RouteOptimizer:
@@ -411,10 +430,84 @@ def api_predict():
         if not re.match(r'^[a-zA-Z\s\-]+$', city):
             return jsonify({"error": "Invalid city name"}), 400
         
-        result = predictor.predict(city)
+        # Get coordinates for city
+        coords = get_city_coordinates(city)
+        
+        result = predictor.predict(city, coords)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# City coordinates database
+CITY_COORDINATES = {
+    "london": (51.5074, -0.1278),
+    "new york": (40.7128, -74.0060),
+    "tokyo": (35.6762, 139.6503),
+    "paris": (48.8566, 2.3522),
+    "sydney": (-33.8688, 151.2093),
+    "dubai": (25.2048, 55.2708),
+    "singapore": (1.3521, 103.8198),
+    "mumbai": (19.0760, 72.8777),
+    "delhi": (28.7041, 77.1025),
+    "bangalore": (12.9716, 77.5946),
+    "chennai": (13.0827, 80.2707),
+    "kolkata": (22.5726, 88.3639),
+    "hyderabad": (17.3850, 78.4867),
+    "jaipur": (26.9124, 75.7873),
+    "kerala": (10.8505, 76.2711),
+    "rajasthan": (27.0238, 74.2179),
+    "gujarat": (22.2587, 71.1924),
+    "himachal": (31.1048, 77.1734),
+    "tamil nadu": (11.1271, 78.6569),
+    "los angeles": (34.0522, -118.2437),
+    "chicago": (41.8781, -87.6298),
+    "san francisco": (37.7749, -122.4194),
+    "miami": (25.7617, -80.1918),
+    "seattle": (47.6062, -122.3321),
+    "boston": (42.3601, -71.0589),
+    "berlin": (52.5200, 13.4050),
+    "madrid": (40.4168, -3.7038),
+    "rome": (41.9028, 12.4964),
+    "amsterdam": (52.3676, 4.9041),
+    "moscow": (55.7558, 37.6173),
+    "beijing": (39.9042, 116.4074),
+    "shanghai": (31.2304, 121.4737),
+    "hong kong": (22.3193, 114.1694),
+    "taipei": (25.0330, 121.5654),
+    "seoul": (37.5665, 126.9780),
+    "bangkok": (13.7563, 100.5018),
+    "jakarta": (-6.2088, 106.8456),
+    "kuala lumpur": (3.1390, 101.6869),
+    "manila": (14.5995, 120.9842),
+    "cairo": (30.0444, 31.2357),
+    "lagos": (6.5244, 3.3792),
+    "cape town": (-33.9249, 18.4241),
+    "nairobi": (-1.2921, 36.8219),
+    "rio de janeiro": (-22.9068, -43.1729),
+    "buenos aires": (-34.6037, -58.3816),
+    "mexico city": (19.4326, -99.1332),
+    "toronto": (43.6532, -79.3832),
+    "vancouver": (49.2827, -123.1207),
+    "melbourne": (-37.8136, 144.9631),
+    "auckland": (-36.8509, 174.7645),
+}
+
+def get_city_coordinates(city_name):
+    """Get coordinates for a city name."""
+    city_lower = city_name.lower().strip()
+    
+    # Direct lookup
+    if city_lower in CITY_COORDINATES:
+        return CITY_COORDINATES[city_lower]
+    
+    # Try partial match
+    for city, coords in CITY_COORDINATES.items():
+        if city_lower in city or city in city_lower:
+            return coords
+    
+    # Default to London
+    return (51.5074, -0.1278)
 
 
 @app.route('/api/route', methods=['POST'])

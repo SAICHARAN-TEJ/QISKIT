@@ -4,460 +4,797 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QiskitML — Quantum Disaster Prediction</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Satoshi:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <style>
   :root {
-    --c-bg: #050810;
-    --c-surface: #0b0f1a;
-    --c-glass: rgba(255,255,255,0.04);
-    --c-border: rgba(255,255,255,0.08);
-    --c-text: #e8eaf0;
-    --c-muted: #6b7280;
-    --c-accent: #00d4ff;
-    --c-accent-glow: rgba(0,212,255,0.25);
-    --c-cyan: #06b6d4;
-    --c-amber: #f59e0b;
-    --c-green: #10b981;
-    --c-purple: #c084fc;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body: 'Syne', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --bg-primary: #faf9f7;
+    --bg-secondary: #f3f1ed;
+    --bg-card: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5a5a5a;
+    --text-muted: #9a9a9a;
+    --accent: #0d9488;
+    --accent-soft: rgba(13, 148, 136, 0.08);
+    --accent-subtle: rgba(13, 148, 136, 0.15);
+    --border: #e8e6e1;
+    --border-light: #f0ede6;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.03);
+    --shadow-md: 0 8px 30px rgba(0,0,0,0.06);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.08);
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 32px;
   }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--c-bg);
-    color: var(--c-text);
-    font-family: var(--font-body);
+    font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
     overflow-x: hidden;
-    cursor: none;
+    line-height: 1.6;
   }
 
-  #cursor {
-    position: fixed; z-index: 9999; pointer-events: none;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--c-accent);
-    transform: translate(-50%, -50%);
-    transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
-    mix-blend-mode: normal;
-  }
-  #cursor-ring {
-    position: fixed; z-index: 9998; pointer-events: none;
-    width: 36px; height: 36px; border-radius: 50%;
-    border: 1px solid rgba(0,212,255,0.5);
-    transform: translate(-50%, -50%);
-    transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1), width 0.3s, height 0.3s;
-  }
-  body:has(a:hover) #cursor, body:has(button:hover) #cursor { width: 14px; height: 14px; background: var(--c-cyan); }
-  body:has(a:hover) #cursor-ring, body:has(button:hover) #cursor-ring { width: 60px; height: 60px; border-color: rgba(0,212,255,0.3); }
-
-  body::after {
-    content: '';
-    position: fixed; inset: 0; z-index: 9990; pointer-events: none;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px);
+  /* 3D Canvas */
+  #hero-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
   }
 
-  body::before {
-    content: '';
-    position: fixed; inset: -200%; z-index: 9991; pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    opacity: 0.028;
-    animation: grain 0.5s steps(2) infinite;
-  }
-  @keyframes grain { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-2%,-1%)} 50%{transform:translate(1%,2%)} 75%{transform:translate(-1%,1%)} }
-
+  /* Navigation */
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    display: flex; align-items: center; justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
     padding: 1.25rem 3rem;
-    border-bottom: 1px solid transparent;
-    transition: background 0.4s, border-color 0.4s, backdrop-filter 0.4s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(250, 249, 247, 0.85);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border-light);
+    transition: all 0.4s ease;
   }
   nav.scrolled {
-    background: rgba(5,8,16,0.85);
-    backdrop-filter: blur(16px);
-    border-color: var(--c-border);
+    padding: 0.85rem 3rem;
+    background: rgba(255, 255, 255, 0.92);
   }
+
   .nav-logo {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    letter-spacing: 0.08em;
-    color: var(--c-text);
+    font-family: 'Clash Display', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
-  .nav-logo span { color: var(--c-accent); }
-  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-logo svg { width: 24px; height: 24px; }
+
+  .nav-links { display: flex; gap: 2.5rem; align-items: center; }
   .nav-links a {
-    font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--c-muted); text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
     transition: color 0.2s;
   }
-  .nav-links a:hover { color: var(--c-text); }
+  .nav-links a:hover { color: var(--text-primary); }
+
   .nav-cta {
-    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em;
-    color: var(--c-accent); border: 1px solid var(--c-accent);
-    padding: 0.5rem 1.25rem; border-radius: 2px; text-decoration: none;
-    transition: background 0.2s, color 0.2s;
-    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.25s ease;
   }
-  .nav-cta:hover { background: var(--c-accent); color: #050810; }
+  .nav-cta:hover {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-1px);
+  }
 
+  /* Hero Section */
   #hero {
-    position: relative; height: 100vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    overflow: hidden; text-align: center;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 2rem 4rem;
+    z-index: 2;
   }
-  #canvas-bg {
-    position: absolute; inset: 0; z-index: 0;
-  }
-  .hero-content { position: relative; z-index: 2; max-width: 900px; padding: 0 2rem; }
 
-  .hero-eyebrow {
-    font-family: var(--font-mono); font-size: 0.72rem;
-    letter-spacing: 0.25em; text-transform: uppercase;
-    color: var(--c-accent); margin-bottom: 1.5rem;
-    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-    opacity: 0;
+  .hero-content {
+    max-width: 680px;
+    text-align: center;
   }
-  .hero-eyebrow::before, .hero-eyebrow::after {
-    content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--c-accent); opacity: 0.5;
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 0.55rem 1rem;
+    border-radius: 50px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1.75rem;
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    transform: translateY(15px);
   }
 
   .hero-title {
-    font-family: var(--font-display);
-    font-size: clamp(5rem, 14vw, 11rem);
-    line-height: 0.9;
-    letter-spacing: 0.02em;
-    color: var(--c-text);
+    font-family: 'Clash Display', sans-serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(25px);
   }
-  .hero-title .accent { color: var(--c-accent); display: inline-block; }
-  .hero-title .sub { font-size: 0.42em; letter-spacing: 0.12em; color: var(--c-muted); display: block; margin-top: 0.2em; }
+  .hero-title .accent { color: var(--accent); }
+
+  .hero-title .sub {
+    display: block;
+    font-size: 0.28em;
+    letter-spacing: 0.01em;
+    color: var(--text-muted);
+    margin-top: 0.4em;
+    font-weight: 500;
+    font-family: 'Satoshi', sans-serif;
+  }
 
   .hero-desc {
-    margin: 2rem auto 0;
-    max-width: 500px;
-    font-size: 0.95rem;
-    line-height: 1.75;
-    color: var(--c-muted);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0 auto 2rem;
+    max-width: 460px;
     opacity: 0;
   }
+
+  /* City Search */
+  .search-container {
+    position: relative;
+    max-width: 420px;
+    margin: 0 auto 2rem;
+    opacity: 0;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1rem 1.25rem 1rem 3rem;
+    font-family: 'Satoshi', sans-serif;
+    font-size: 0.95rem;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.25s ease;
+    box-shadow: var(--shadow-sm);
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-md);
+  }
+  .search-input::placeholder { color: var(--text-muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+  }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 50;
+    display: none;
+  }
+  .search-results.active { display: block; }
+
+  .search-result-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: background 0.15s;
+  }
+  .search-result-item:hover { background: var(--bg-secondary); }
+  .search-result-item:first-child { border-radius: var(--radius-md) var(--radius-md) 0 0; }
+  .search-result-item:last-child { border-radius: 0 0 var(--radius-md) var(--radius-md); }
+  .search-result-icon { color: var(--accent); }
+  .search-result-name { font-weight: 500; font-size: 0.9rem; }
+  .search-result-coords { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
 
   .hero-actions {
-    display: flex; gap: 1rem; justify-content: center; margin-top: 2.5rem;
+    display: flex;
+    gap: 0.85rem;
+    justify-content: center;
     opacity: 0;
   }
-  .btn-primary {
-    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em;
-    text-transform: uppercase; padding: 0.85rem 2rem; border-radius: 2px;
-    background: var(--c-accent); color: #050810; border: none; cursor: none;
-    transition: opacity 0.2s, transform 0.15s;
-    text-decoration: none; display: inline-block; font-weight: 600;
-  }
-  .btn-primary:hover { opacity: 0.85; transform: translateY(-2px); }
-  .btn-ghost {
-    font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em;
-    text-transform: uppercase; padding: 0.85rem 2rem; border-radius: 2px;
-    background: transparent; color: var(--c-text); border: 1px solid var(--c-border);
-    cursor: none; transition: border-color 0.2s, transform 0.15s;
-    text-decoration: none; display: inline-block;
-  }
-  .btn-ghost:hover { border-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
 
-  .hero-scroll-hint {
-    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--c-muted);
-    opacity: 0; animation: fadeInUp 1s 2.5s forwards;
+  .btn-primary {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.9rem 2rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: white;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 10px rgba(13, 148, 136, 0.25);
   }
-  .scroll-line {
-    width: 1px; height: 40px; background: linear-gradient(to bottom, var(--c-muted), transparent);
-    animation: scrollPulse 2s ease-in-out infinite;
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 148, 136, 0.35);
   }
-  @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(0.6)} }
+  .btn-ghost {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.9rem 2rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1.5px solid var(--border);
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.25s ease;
+  }
+  .btn-ghost:hover {
+    border-color: var(--text-secondary);
+    transform: translateY(-2px);
+  }
+
+  /* Scroll indicator */
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeInUp 1s 3s forwards;
+  }
+  .scroll-mouse {
+    width: 22px;
+    height: 36px;
+    border: 2px solid var(--text-muted);
+    border-radius: 11px;
+    position: relative;
+  }
+  .scroll-wheel {
+    width: 3px;
+    height: 6px;
+    background: var(--text-muted);
+    border-radius: 2px;
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: scrollWheel 1.5s ease-in-out infinite;
+  }
+  @keyframes scrollWheel {
+    0%, 100% { top: 6px; opacity: 1; }
+    50% { top: 16px; opacity: 0.3; }
+  }
   @keyframes fadeInUp { to { opacity: 1; } }
 
+  /* Stats Ticker */
   .ticker {
-    position: relative; z-index: 2;
-    background: rgba(0,212,255,0.08);
-    border-top: 1px solid rgba(0,212,255,0.2);
-    border-bottom: 1px solid rgba(0,212,255,0.2);
-    padding: 0.6rem 0; overflow: hidden;
+    position: relative;
+    z-index: 2;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.7rem 0;
+    overflow: hidden;
   }
-  .ticker-inner {
-    display: flex; gap: 3rem;
+  .ticker-track {
+    display: flex;
+    gap: 3rem;
     white-space: nowrap;
-    animation: tickerScroll 30s linear infinite;
-    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--c-accent);
+    animation: tickerScroll 40s linear infinite;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
   }
-  .ticker-inner span { opacity: 0.7; }
-  .ticker-inner strong { opacity: 1; }
+  .ticker-track span { color: var(--text-muted); }
+  .ticker-track strong { color: var(--accent); font-weight: 500; }
   @keyframes tickerScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
+  /* Metrics Section */
   .metrics-section {
-    padding: 5rem 3rem;
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
-    background: var(--c-border);
+    padding: 4rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
   }
-  .metric-cell {
-    background: var(--c-bg);
-    padding: 2.5rem 2rem;
-    position: relative; overflow: hidden;
-  }
-  .metric-cell::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(to right, transparent, var(--c-accent), transparent);
-    transform: scaleX(0); transform-origin: left;
-    transition: transform 0.6s ease;
-  }
-  .metric-cell:hover::before { transform: scaleX(1); }
-  .metric-num {
-    font-family: var(--font-display);
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    color: var(--c-text); line-height: 1;
-  }
-  .metric-num .unit { font-size: 0.45em; color: var(--c-muted); }
-  .metric-label { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-muted); margin-top: 0.5rem; }
 
-  .dashboard-section {
-    padding: 6rem 3rem;
-    max-width: 1400px; margin: 0 auto;
+  .metric-card {
+    background: var(--bg-card);
+    padding: 1.75rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    transition: all 0.3s ease;
   }
+  .metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-subtle);
+  }
+
+  .metric-value {
+    font-family: 'Clash Display', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+  .metric-value .unit {
+    font-size: 0.35em;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 0.15em;
+  }
+  .metric-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    font-weight: 500;
+  }
+
+  /* Dashboard Preview Section */
+  .dashboard-section {
+    padding: 5rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
   .section-header {
-    display: flex; align-items: baseline; justify-content: space-between;
+    text-align: center;
     margin-bottom: 3rem;
   }
   .section-title {
-    font-family: var(--font-display);
-    font-size: clamp(2.5rem, 5vw, 4.5rem);
-    line-height: 1; letter-spacing: 0.02em;
+    font-family: 'Clash Display', sans-serif;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
   }
-  .section-title span { color: var(--c-accent); }
-  .section-label {
-    font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--c-muted);
+  .section-title span { color: var(--accent); }
+  .section-subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+  }
+  .live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-top: 0.5rem;
   }
   .live-dot {
-    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-    background: var(--c-green); margin-right: 0.5rem;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
     animation: livePulse 2s ease-in-out infinite;
   }
-  @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(16,185,129,0.4)} 50%{opacity:0.7;box-shadow:0 0 0 6px rgba(16,185,129,0)} }
+  @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.9)} }
 
-  .disaster-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1px;
-    background: var(--c-border); border: 1px solid var(--c-border);
+  /* Risk Cards */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
   }
-  .disaster-card {
-    background: var(--c-surface);
+
+  .risk-card {
+    background: var(--bg-card);
     padding: 1.75rem;
-    position: relative; cursor: none;
-    transition: background 0.25s;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
   }
-  .disaster-card:hover { background: rgba(15,20,35,0.9); }
-  .disaster-card-header {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;
+  .risk-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
   }
-  .disaster-type {
-    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.2em;
-    text-transform: uppercase; color: var(--c-muted);
+  .risk-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .risk-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
   .risk-badge {
-    font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em;
-    text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 4px;
+    font-weight: 500;
   }
-  .risk-critical { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-  .risk-high { background: rgba(245,158,11,0.12); color: var(--c-amber); border: 1px solid rgba(245,158,11,0.3); }
-  .risk-medium { background: rgba(6,182,212,0.1); color: var(--c-cyan); border: 1px solid rgba(6,182,212,0.25); }
-  .risk-low { background: rgba(16,185,129,0.1); color: var(--c-green); border: 1px solid rgba(16,185,129,0.25); }
-  .risk-percent {
-    font-family: var(--font-display);
-    font-size: 3rem; line-height: 1;
-    color: var(--c-text); margin-bottom: 0.5rem;
+  .risk-critical { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+  .risk-high { background: rgba(217, 119, 6, 0.1); color: #d97706; }
+  .risk-medium { background: rgba(8, 145, 178, 0.1); color: #0891b2; }
+  .risk-low { background: rgba(5, 150, 105, 0.1); color: #059669; }
+
+  .risk-value {
+    font-family: 'Clash Display', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
   }
+  .risk-value .percent { font-size: 0.9rem; color: var(--text-muted); }
+
   .risk-bar {
-    height: 2px; background: rgba(255,255,255,0.06);
-    margin: 1rem 0; border-radius: 1px; overflow: hidden;
+    height: 4px;
+    background: var(--bg-secondary);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1rem;
   }
   .risk-bar-fill {
-    height: 100%; border-radius: 1px;
-    transition: width 1.5s cubic-bezier(0.23,1,0.32,1);
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .disaster-meta {
-    display: flex; gap: 1.5rem;
-    font-family: var(--font-mono); font-size: 0.65rem;
-    color: var(--c-muted); letter-spacing: 0.05em;
-  }
-  .disaster-meta span { display: flex; flex-direction: column; gap: 0.2rem; }
-  .disaster-meta strong { color: var(--c-text); font-weight: 500; font-size: 0.75rem; }
 
-  .features-section {
-    padding: 6rem 3rem;
-    background: var(--c-surface);
-    position: relative;
+  .risk-meta {
+    display: flex;
+    gap: 1.25rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
   }
-  .features-section::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(to right, transparent, var(--c-border), transparent);
+  .risk-meta strong { color: var(--text-primary); font-weight: 500; }
+
+  /* Quantum Status Card */
+  .quantum-status-card {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg-card) 100%);
+    border-color: var(--accent-subtle);
+  }
+  .quantum-status-card .risk-type { color: var(--accent); }
+  .quantum-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.9;
+  }
+  .quantum-info div { display: flex; align-items: center; gap: 0.5rem; }
+  .quantum-info .active { color: var(--accent); }
+
+  /* Features Section */
+  .features-section {
+    padding: 5rem 3rem;
+    background: var(--bg-secondary);
+  }
+  .features-container {
+    max-width: 1100px;
+    margin: 0 auto;
   }
   .features-grid {
-    max-width: 1400px; margin: 3rem auto 0;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-    background: var(--c-border);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
   }
-  .feature-item {
-    background: var(--c-surface);
-    padding: 2.5rem 2rem;
-    position: relative; overflow: hidden;
-    transition: background 0.25s;
+
+  .feature-card {
+    background: var(--bg-card);
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
   }
-  .feature-item:hover { background: rgba(15,20,35,0.7); }
-  .feature-num {
-    font-family: var(--font-display); font-size: 4rem; line-height: 1;
-    color: rgba(255,255,255,0.05); position: absolute; top: 1rem; right: 1.5rem;
-    pointer-events: none;
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
   }
   .feature-icon {
-    width: 36px; height: 36px; margin-bottom: 1.5rem;
-    display: flex; align-items: center; justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--accent-soft);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    color: var(--accent);
   }
   .feature-title {
-    font-size: 1rem; font-weight: 600; letter-spacing: 0.02em;
-    margin-bottom: 0.75rem; color: var(--c-text);
+    font-family: 'Clash Display', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
   }
-  .feature-desc { font-size: 0.85rem; line-height: 1.7; color: var(--c-muted); }
+  .feature-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
   .feature-tag {
-    display: inline-block; margin-top: 1.25rem;
-    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.15em;
-    text-transform: uppercase; color: var(--c-cyan);
-    border-bottom: 1px solid rgba(6,182,212,0.3); padding-bottom: 1px;
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--accent-subtle);
+    padding-bottom: 2px;
   }
 
-  .disaster-scroll-section {
-    padding: 6rem 0;
+  /* Hazard Scroll */
+  .hazard-scroll {
+    padding: 4rem 0;
     overflow: hidden;
+    background: var(--bg-primary);
   }
-  .disaster-scroll-section .section-header { padding: 0 3rem; }
-  .scroll-track {
-    display: flex; gap: 1px;
-    animation: scrollTrack 25s linear infinite;
-    width: max-content; background: var(--c-border);
-    border-top: 1px solid var(--c-border); border-bottom: 1px solid var(--c-border);
-    margin-top: 3rem;
+  .hazard-scroll .section-header {
+    padding: 0 3rem;
+    max-width: 1100px;
+    margin: 0 auto 2.5rem;
   }
-  .scroll-track:hover { animation-play-state: paused; }
-  @keyframes scrollTrack { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-  .disaster-pill {
-    background: var(--c-surface);
-    padding: 2rem 2.5rem;
-    white-space: nowrap; min-width: 240px;
-    transition: background 0.2s;
+  .hazard-track {
+    display: flex;
+    width: max-content;
+    animation: hazardScroll 35s linear infinite;
   }
-  .disaster-pill:hover { background: rgba(15,20,35,0.8); }
-  .disaster-pill-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
-  .disaster-pill-name {
-    font-family: var(--font-display); font-size: 1.4rem; letter-spacing: 0.05em;
+  .hazard-track:hover { animation-play-state: paused; }
+  @keyframes hazardScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  .hazard-pill {
+    background: var(--bg-card);
+    padding: 1.25rem 1.75rem;
+    min-width: 180px;
+    border-right: 1px solid var(--border-light);
+    transition: all 0.2s;
   }
-  .disaster-pill-thresh {
-    font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-muted);
-    margin-top: 0.4rem; letter-spacing: 0.1em;
+  .hazard-pill:hover { background: var(--accent-soft); }
+  .hazard-icon { font-size: 1.4rem; margin-bottom: 0.35rem; }
+  .hazard-name {
+    font-family: 'Clash Display', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .hazard-thresh {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
   }
 
+  /* API Section */
   .api-section {
-    padding: 6rem 3rem;
-    max-width: 1400px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    padding: 5rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 4rem;
+    align-items: center;
   }
+  .api-info h2 {
+    font-family: 'Clash Display', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .api-info h2 span { color: var(--accent); }
+  .api-info p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+  .api-info code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+  .api-routes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .api-route {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+  }
+  .route-method {
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 500;
+  }
+  .route-method.post { background: rgba(5, 150, 105, 0.1); color: #059669; }
+  .route-method.get { background: rgba(8, 145, 178, 0.1); color: #0891b2; }
+
   .api-code {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 4px; overflow: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
   }
   .api-code-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0.75rem 1.25rem;
-    border-bottom: 1px solid var(--c-border);
-    background: rgba(255,255,255,0.02);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.25rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
   }
-  .code-dots { display: flex; gap: 6px; }
+  .code-dots { display: flex; gap: 5px; }
   .code-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .code-dot:nth-child(1){background:#ef4444;opacity:0.7}
-  .code-dot:nth-child(2){background:#f59e0b;opacity:0.7}
-  .code-dot:nth-child(3){background:#10b981;opacity:0.7}
-  .code-lang { font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-muted); letter-spacing: 0.1em; }
-  pre {
-    padding: 1.5rem; font-family: var(--font-mono); font-size: 0.75rem;
-    line-height: 1.7; overflow-x: auto; color: var(--c-text);
+  .code-dot:nth-child(1) { background: #ef4444; }
+  .code-dot:nth-child(2) { background: #f59e0b; }
+  .code-dot:nth-child(3) { background: #22c55e; }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-muted);
   }
-  .c-kw { color: #c084fc; }
-  .c-str { color: #86efac; }
-  .c-num { color: var(--c-amber); }
-  .c-key { color: var(--c-cyan); }
-  .c-cm { color: var(--c-muted); }
+  .api-code pre {
+    padding: 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text-secondary);
+  }
+  .c-key { color: #0891b2; }
+  .c-str { color: #059669; }
+  .c-num { color: #d97706; }
+  .c-cm { color: var(--text-muted); }
 
+  /* CTA */
   .cta-section {
-    padding: 8rem 3rem;
+    padding: 6rem 3rem;
     text-align: center;
-    position: relative; overflow: hidden;
-    background: var(--c-surface);
-    border-top: 1px solid var(--c-border);
-  }
-  .cta-glow {
-    position: absolute; top: 50%; left: 50%;
-    width: 600px; height: 400px;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(ellipse, rgba(0,212,255,0.12) 0%, transparent 70%);
-    pointer-events: none;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
   }
   .cta-title {
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 8vw, 7rem); line-height: 0.95;
-    position: relative; z-index: 1;
+    font-family: 'Clash Display', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
   }
-  .cta-subtitle { color: var(--c-muted); font-size: 0.95rem; margin: 1.5rem auto; max-width: 400px; line-height: 1.7; position: relative; z-index: 1; }
-  .cta-actions { display: flex; gap: 1rem; justify-content: center; position: relative; z-index: 1; margin-top: 2rem; }
+  .cta-title span { color: var(--accent); }
+  .cta-subtitle {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+  }
 
+  /* Footer */
   footer {
     padding: 2rem 3rem;
-    border-top: 1px solid var(--c-border);
-    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-secondary);
   }
-  .footer-brand { font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0.08em; }
-  .footer-brand span { color: var(--c-accent); }
-  .footer-copy { font-family: var(--font-mono); font-size: 0.65rem; color: var(--c-muted); letter-spacing: 0.1em; }
+  .footer-brand {
+    font-family: 'Clash Display', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .footer-brand span { color: var(--accent); }
+  .footer-copy {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
   .footer-links { display: flex; gap: 1.5rem; }
-  .footer-links a { font-size: 0.72rem; color: var(--c-muted); text-decoration: none; transition: color 0.2s; }
-  .footer-links a:hover { color: var(--c-text); }
+  .footer-links a {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text-primary); }
 
   .reveal { opacity: 0; transform: translateY(30px); }
 
-  @media (max-width: 768px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links { display: none; }
+  @media (max-width: 900px) {
     .metrics-section { grid-template-columns: 1fr 1fr; }
-    .features-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
     .api-section { grid-template-columns: 1fr; gap: 2rem; }
-    .disaster-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    nav { padding: 1rem 1.25rem; }
+    .nav-links { display: none; }
+    .metrics-section { grid-template-columns: 1fr; padding: 3rem 1.25rem; }
+    .features-grid { grid-template-columns: 1fr; }
+    .risk-grid { grid-template-columns: 1fr; }
+    .hero-actions { flex-direction: column; align-items: center; }
     footer { flex-direction: column; gap: 1rem; text-align: center; }
-    .footer-links { justify-content: center; }
   }
 </style>
 </head>
 <body>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
+<canvas id="hero-canvas"></canvas>
 
 <nav id="nav">
-  <a href="#" class="nav-logo">Qiskit<span>ML</span></a>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+    </svg>
+    QiskitML
+  </a>
   <div class="nav-links">
     <a href="#dashboard">Dashboard</a>
     <a href="#features">Features</a>
@@ -467,337 +804,331 @@
 </nav>
 
 <section id="hero">
-  <canvas id="canvas-bg"></canvas>
   <div class="hero-content">
-    <div class="hero-eyebrow">Quantum Machine Learning · IBM Qiskit</div>
+    <div class="hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+      </svg>
+      IBM Qiskit · VQC · ZZFeatureMap
+    </div>
+
     <h1 class="hero-title">
       <span class="accent">Qiskit</span>ML
       <span class="sub">Quantum-Accelerated Disaster Prediction</span>
     </h1>
-    <p class="hero-desc">Harness quantum computing and machine learning for unprecedented disaster prediction accuracy. Powered by IBM Qiskit with variational quantum circuits.</p>
+
+    <p class="hero-desc">Harness quantum computing and machine learning for unprecedented disaster prediction accuracy.</p>
+
+    <div class="search-container">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" class="search-input" id="citySearch" placeholder="Search any city..." autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
     <div class="hero-actions">
-      <a href="/dashboard" class="btn-primary">Launch Application</a>
+      <a href="/dashboard" class="btn-primary" id="launchBtn">Launch Application</a>
       <a href="#api" class="btn-ghost">Explore API →</a>
     </div>
   </div>
-  <div class="hero-scroll-hint">
-    <div class="scroll-line"></div>
-    Scroll
+
+  <div class="scroll-indicator">
+    <div class="scroll-mouse">
+      <div class="scroll-wheel"></div>
+    </div>
   </div>
 </section>
 
 <div class="ticker">
-  <div class="ticker-inner">
-    <strong>⚡ QUANTUM ML ACTIVE</strong> <span>VQC · ZZFeatureMap · 4 Qubits</span>
-    <strong>◆ HEAT WAVE</strong> <span>Rajasthan — Temp 39°C — Risk 78%</span>
-    <strong>◆ CYCLONE</strong> <span>Bay of Bengal — Wind 18 m/s — Risk 87%</span>
-    <strong>◆ FLOOD WATCH</strong> <span>Kerala — Humidity 92% — Risk 71%</span>
-    <strong>✓ ALL CLEAR</strong> <span>Tamil Nadu — Normal Conditions</span>
-    <strong>⚡ QUANTUM ML ACTIVE</strong> <span>VQC · ZZFeatureMap · 4 Qubits</span>
-    <strong>◆ HEAT WAVE</strong> <span>Rajasthan — Temp 39°C — Risk 78%</span>
-    <strong>◆ CYCLONE</strong> <span>Bay of Bengal — Wind 18 m/s — Risk 87%</span>
-    <strong>◆ FLOOD WATCH</strong> <span>Kerala — Humidity 92% — Risk 71%</span>
-    <strong>✓ ALL CLEAR</strong> <span>Tamil Nadu — Normal Conditions</span>
+  <div class="ticker-track">
+    <strong>◈ VQC ACTIVE</strong> <span>ZZFeatureMap · 4 Qubits · EfficientSU2</span>
+    <strong>◆ HEAT WAVE</strong> <span>Mumbai — 36°C — Risk 82%</span>
+    <strong>◆ CYCLONE</strong> <span>Bay of Bengal — 20 m/s — Risk 91%</span>
+    <strong>◆ FLOOD</strong> <span>Kerala — 94% Humidity — Risk 78%</span>
+    <strong>✓ ALL CLEAR</strong> <span>Delhi — Normal Conditions</span>
+    <strong>◈ VQC ACTIVE</strong> <span>ZZFeatureMap · 4 Qubits · EfficientSU2</span>
+    <strong>◆ HEAT WAVE</strong> <span>Mumbai — 36°C — Risk 82%</span>
+    <strong>◆ CYCLONE</strong> <span>Bay of Bengal — 20 m/s — Risk 91%</span>
+    <strong>◆ FLOOD</strong> <span>Kerala — 94% Humidity — Risk 78%</span>
+    <strong>✓ ALL CLEAR</strong> <span>Delhi — Normal Conditions</span>
   </div>
 </div>
 
-<div class="metrics-section">
-  <div class="metric-cell">
-    <div class="metric-num"><span class="counter" data-target="4">0</span><span class="unit"> qubits</span></div>
+<section class="metrics-section">
+  <div class="metric-card">
+    <div class="metric-value"><span class="counter" data-target="4">0</span><span class="unit">qubits</span></div>
     <div class="metric-label">Quantum Processing</div>
   </div>
-  <div class="metric-cell">
-    <div class="metric-num"><span class="counter" data-target="99.7">0</span><span class="unit">%</span></div>
+  <div class="metric-card">
+    <div class="metric-value"><span class="counter" data-target="99.7">0</span><span class="unit">%</span></div>
     <div class="metric-label">Prediction Accuracy</div>
   </div>
-  <div class="metric-cell">
-    <div class="metric-num"><span class="counter" data-target="5">0</span><span class="unit"> types</span></div>
+  <div class="metric-card">
+    <div class="metric-value"><span class="counter" data-target="5">0</span><span class="unit">types</span></div>
     <div class="metric-label">Hazard Categories</div>
   </div>
-  <div class="metric-cell">
-    <div class="metric-num"><span class="counter" data-target="0">0</span><span class="unit"> API Key</span></div>
-    <div class="metric-label">Routing (OSRM) — Free</div>
+  <div class="metric-card">
+    <div class="metric-value"><span class="counter" data-target="0">0</span><span class="unit">key</span></div>
+    <div class="metric-label">OSRM — Free Routing</div>
   </div>
-</div>
+</section>
 
 <section class="dashboard-section" id="dashboard">
   <div class="section-header reveal">
-    <h2 class="section-title">Live <span>Risk</span> Feed</h2>
-    <div class="section-label"><span class="live-dot"></span>Quantum ML Analysis Active</div>
+    <h2 class="section-title">Live <span>Risk</span> Analysis</h2>
+    <p class="section-subtitle">Real-time quantum-enhanced disaster predictions</p>
+    <div class="live-indicator"><span class="live-dot"></span>Quantum ML Active</div>
   </div>
-  <div class="disaster-grid reveal">
 
-    <div class="disaster-card">
-      <div class="disaster-card-header">
-        <div class="disaster-type">Cyclone</div>
-        <div class="risk-badge risk-critical">Critical</div>
+  <div class="risk-grid reveal">
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <span class="risk-type">Cyclone</span>
+        <span class="risk-badge risk-critical">Critical</span>
       </div>
-      <div class="risk-percent" id="risk-cyclone">87<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#ef4444" data-width="87"></div></div>
-      <div class="disaster-meta">
-        <span><strong>18.4 m/s</strong> Wind Speed</span>
-        <span><strong>974 mbar</strong> Pressure</span>
-        <span><strong>Bay of Bengal</strong> Location</span>
+      <div class="risk-value" id="risk-cyclone">87<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#dc2626" data-width="87"></div></div>
+      <div class="risk-meta">
+        <span><strong>18.4 m/s</strong> Wind</span>
+        <span><strong>974 hPa</strong> Pressure</span>
       </div>
     </div>
 
-    <div class="disaster-card">
-      <div class="disaster-card-header">
-        <div class="disaster-type">Heat Wave</div>
-        <div class="risk-badge risk-high">High</div>
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <span class="risk-type">Heat Wave</span>
+        <span class="risk-badge risk-high">High</span>
       </div>
-      <div class="risk-percent" id="risk-heat">78<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-amber)" data-width="78"></div></div>
-      <div class="disaster-meta">
+      <div class="risk-value" id="risk-heat">78<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#d97706" data-width="78"></div></div>
+      <div class="risk-meta">
         <span><strong>38.9°C</strong> Temperature</span>
         <span><strong>64%</strong> Humidity</span>
-        <span><strong>Rajasthan</strong> Location</span>
       </div>
     </div>
 
-    <div class="disaster-card">
-      <div class="disaster-card-header">
-        <div class="disaster-type">Flood</div>
-        <div class="risk-badge risk-high">High</div>
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <span class="risk-type">Flood</span>
+        <span class="risk-badge risk-high">High</span>
       </div>
-      <div class="risk-percent" id="risk-flood">71<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-cyan)" data-width="71"></div></div>
-      <div class="disaster-meta">
+      <div class="risk-value" id="risk-flood">71<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#0891b2" data-width="71"></div></div>
+      <div class="risk-meta">
         <span><strong>91.5%</strong> Humidity</span>
         <span><strong>12.1°C</strong> Temp</span>
-        <span><strong>Kerala</strong> Location</span>
       </div>
     </div>
 
-    <div class="disaster-card">
-      <div class="disaster-card-header">
-        <div class="disaster-type">Blizzard</div>
-        <div class="risk-badge risk-medium">Medium</div>
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <span class="risk-type">Blizzard</span>
+        <span class="risk-badge risk-medium">Medium</span>
       </div>
-      <div class="risk-percent" id="risk-blizzard">54<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-cyan)" data-width="54"></div></div>
-      <div class="disaster-meta">
+      <div class="risk-value" id="risk-blizzard">54<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#0891b2" data-width="54"></div></div>
+      <div class="risk-meta">
         <span><strong>-6.2°C</strong> Temperature</span>
         <span><strong>9.3 m/s</strong> Wind</span>
-        <span><strong>Himachal</strong> Location</span>
       </div>
     </div>
 
-    <div class="disaster-card">
-      <div class="disaster-card-header">
-        <div class="disaster-type">Earthquake</div>
-        <div class="risk-badge risk-low">Low</div>
+    <div class="risk-card">
+      <div class="risk-card-header">
+        <span class="risk-type">Earthquake</span>
+        <span class="risk-badge risk-low">Low</span>
       </div>
-      <div class="risk-percent" id="risk-eq">32<span style="font-size:1.2rem;color:var(--c-muted)">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--c-green)" data-width="32"></div></div>
-      <div class="disaster-meta">
-        <span><strong>982 mbar</strong> Pressure</span>
+      <div class="risk-value" id="risk-eq">32<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#059669" data-width="32"></div></div>
+      <div class="risk-meta">
+        <span><strong>982 hPa</strong> Pressure</span>
         <span><strong>Stable</strong> Seismic</span>
-        <span><strong>Gujarat</strong> Location</span>
       </div>
     </div>
 
-    <div class="disaster-card" style="background:rgba(16,185,129,0.04);">
-      <div class="disaster-card-header">
-        <div class="disaster-type" style="color:var(--c-green)">Quantum Status</div>
-        <div class="risk-badge risk-low">Active</div>
+    <div class="risk-card quantum-status-card">
+      <div class="risk-card-header">
+        <span class="risk-type">Quantum Status</span>
+        <span class="risk-badge" style="background:var(--accent-soft);color:var(--accent)">Active</span>
       </div>
-      <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--c-muted);line-height:2;margin-top:0.5rem">
-        <div style="color:var(--c-green)">▶ ZZFeatureMap Encoding</div>
-        <div>VQC Architecture: EfficientSU2</div>
-        <div>Backend: <strong style="color:var(--c-accent)">Classical Simulator</strong></div>
-        <div>Shots: <strong style="color:var(--c-text)">1024</strong></div>
-        <div style="margin-top:0.5rem;color:var(--c-green)">✓ IBM Qiskit Ready</div>
+      <div class="quantum-info">
+        <div class="active">▶ ZZFeatureMap Encoding</div>
+        <div>VQC: EfficientSU2</div>
+        <div>Backend: <strong>Classical Simulator</strong></div>
+        <div>Shots: <strong>1024</strong></div>
+        <div style="margin-top:0.5rem;color:var(--accent)">✓ IBM Qiskit Ready</div>
       </div>
     </div>
-
   </div>
 </section>
 
 <section class="features-section" id="features">
-  <div style="max-width:1400px;margin:0 auto">
+  <div class="features-container">
     <div class="section-header reveal">
       <h2 class="section-title">Quantum <span>Features</span></h2>
-      <div class="section-label">Powered by IBM Qiskit</div>
+      <p class="section-subtitle">Powered by IBM Qiskit</p>
     </div>
     <div class="features-grid reveal">
-      <div class="feature-item">
-        <div class="feature-num">01</div>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="3" stroke="#00d4ff" stroke-width="1.5"/><path d="M14 4v3M14 21v3M4 14h3M21 14h3M7 7l2 2M19 19l2 2M7 21l2-2M19 9l2-2" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
         </div>
         <div class="feature-title">ZZFeatureMap Encoding</div>
-        <div class="feature-desc">Second-order Pauli-Z entangling feature map captures complex correlations in environmental data impossible with classical models.</div>
+        <div class="feature-desc">Second-order Pauli-Z entangling feature map captures complex correlations in environmental data.</div>
         <div class="feature-tag">Quantum Feature Encoding</div>
       </div>
-      <div class="feature-item">
-        <div class="feature-num">02</div>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M4 14h5l3-8 4 16 3-10h5" stroke="#c084fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 12h4l3-9 4 18 3-9h4"/>
+          </svg>
         </div>
         <div class="feature-title">Variational Quantum Circuits</div>
-        <div class="feature-desc">Parameterized quantum circuits learn disaster patterns through hybrid quantum-classical optimization with EfficientSU2 ansatz.</div>
+        <div class="feature-desc">Hybrid quantum-classical optimization with EfficientSU2 ansatz for disaster pattern learning.</div>
         <div class="feature-tag">VQC Architecture</div>
       </div>
-      <div class="feature-item">
-        <div class="feature-num">03</div>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 4L4 10v8l10 6 10-6v-8z" stroke="#10b981" stroke-width="1.5" stroke-linejoin="round"/><path d="M14 10v8M4 10l10 4 10-4" stroke="#10b981" stroke-width="1" opacity="0.5"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
         </div>
         <div class="feature-title">Multi-Hazard Detection</div>
-        <div class="feature-desc">Simultaneous detection across heat waves, cyclones, floods, blizzards, and earthquakes with quantum-enhanced accuracy.</div>
+        <div class="feature-desc">Simultaneous detection across heat waves, cyclones, floods, blizzards, and earthquakes.</div>
         <div class="feature-tag">5 Disaster Types</div>
       </div>
-      <div class="feature-item">
-        <div class="feature-num">04</div>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="4" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5"/><rect x="15" y="4" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/><rect x="4" y="15" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5" opacity="0.5"/><rect x="15" y="15" width="9" height="9" rx="2" stroke="#f59e0b" stroke-width="1.5" opacity="0.3"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+          </svg>
         </div>
         <div class="feature-title">Real-Time Weather Data</div>
-        <div class="feature-desc">OpenWeatherMap API integration with Jena climate dataset fallback. Continuous data stream for accurate predictions.</div>
+        <div class="feature-desc">OpenWeatherMap API with Jena climate dataset fallback for continuous prediction.</div>
         <div class="feature-tag">Weather Integration</div>
       </div>
-      <div class="feature-item">
-        <div class="feature-num">05</div>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M8 12h12M8 16h8" stroke="#06b6d4" stroke-width="1.5" stroke-linecap="round"/><rect x="4" y="6" width="20" height="16" rx="3" stroke="#06b6d4" stroke-width="1.5"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
         </div>
         <div class="feature-title">Instant Notifications</div>
-        <div class="feature-desc">Discord webhook and Gmail SMTP alerts fire instantly when quantum analysis detects disaster threats.</div>
+        <div class="feature-desc">Discord webhook and Gmail SMTP alerts fire instantly on disaster threat detection.</div>
         <div class="feature-tag">Discord + Email</div>
       </div>
-      <div class="feature-item">
-        <div class="feature-num">06</div>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="10" stroke="#00d4ff" stroke-width="1.5"/><path d="M14 8v6l4 2" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
         </div>
         <div class="feature-title">Evacuation Routing</div>
-        <div class="feature-desc">OSRM provides free, unlimited routing. Optimal evacuation paths computed in real-time with no API key required.</div>
+        <div class="feature-desc">OSRM provides free, unlimited routing with no API key required.</div>
         <div class="feature-tag">OSRM — No Key Needed</div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="disaster-scroll-section">
+<section class="hazard-scroll">
   <div class="section-header reveal">
     <h2 class="section-title">Hazard <span>Coverage</span></h2>
-    <div class="section-label">Quantum ML Detection Matrix</div>
+    <div class="live-indicator"><span class="live-dot"></span>Quantum ML Detection Matrix</div>
   </div>
-  <div style="display:flex;overflow:hidden">
-    <div class="scroll-track">
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">🌊</div>
-        <div class="disaster-pill-name">Heat Wave</div>
-        <div class="disaster-pill-thresh">Temp > 35°C · Humidity > 60%</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">🌀</div>
-        <div class="disaster-pill-name">Cyclone</div>
-        <div class="disaster-pill-thresh">Wind > 15 m/s · Pressure < 980 mbar</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">💧</div>
-        <div class="disaster-pill-name">Flood</div>
-        <div class="disaster-pill-thresh">Humidity > 90% · Temp > 5°C</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">❄️</div>
-        <div class="disaster-pill-name">Blizzard</div>
-        <div class="disaster-pill-thresh">Temp < -5°C · Wind > 8 m/s</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">⚡</div>
-        <div class="disaster-pill-name">Earthquake</div>
-        <div class="disaster-pill-thresh">Pressure < 970 mbar · Anomaly</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">🌊</div>
-        <div class="disaster-pill-name">Heat Wave</div>
-        <div class="disaster-pill-thresh">Temp > 35°C · Humidity > 60%</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">🌀</div>
-        <div class="disaster-pill-name">Cyclone</div>
-        <div class="disaster-pill-thresh">Wind > 15 m/s · Pressure < 980 mbar</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">💧</div>
-        <div class="disaster-pill-name">Flood</div>
-        <div class="disaster-pill-thresh">Humidity > 90% · Temp > 5°C</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">❄️</div>
-        <div class="disaster-pill-name">Blizzard</div>
-        <div class="disaster-pill-thresh">Temp < -5°C · Wind > 8 m/s</div>
-      </div>
-      <div class="disaster-pill">
-        <div class="disaster-pill-icon">⚡</div>
-        <div class="disaster-pill-name">Earthquake</div>
-        <div class="disaster-pill-thresh">Pressure < 970 mbar · Anomaly</div>
-      </div>
+  <div class="hazard-track">
+    <div class="hazard-pill">
+      <div class="hazard-icon">🌡️</div>
+      <div class="hazard-name">Heat Wave</div>
+      <div class="hazard-thresh">Temp > 35°C · Humidity > 60%</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">🌀</div>
+      <div class="hazard-name">Cyclone</div>
+      <div class="hazard-thresh">Wind > 15 m/s · Pressure < 980</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">🌊</div>
+      <div class="hazard-name">Flood</div>
+      <div class="hazard-thresh">Humidity > 90% · Temp > 5°C</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">❄️</div>
+      <div class="hazard-name">Blizzard</div>
+      <div class="hazard-thresh">Temp < -5°C · Wind > 8 m/s</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">⚡</div>
+      <div class="hazard-name">Earthquake</div>
+      <div class="hazard-thresh">Pressure < 970 mbar · Anomaly</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">🌡️</div>
+      <div class="hazard-name">Heat Wave</div>
+      <div class="hazard-thresh">Temp > 35°C · Humidity > 60%</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">🌀</div>
+      <div class="hazard-name">Cyclone</div>
+      <div class="hazard-thresh">Wind > 15 m/s · Pressure < 980</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">🌊</div>
+      <div class="hazard-name">Flood</div>
+      <div class="hazard-thresh">Humidity > 90% · Temp > 5°C</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">❄️</div>
+      <div class="hazard-name">Blizzard</div>
+      <div class="hazard-thresh">Temp < -5°C · Wind > 8 m/s</div>
+    </div>
+    <div class="hazard-pill">
+      <div class="hazard-icon">⚡</div>
+      <div class="hazard-name">Earthquake</div>
+      <div class="hazard-thresh">Pressure < 970 mbar · Anomaly</div>
     </div>
   </div>
 </section>
 
-<section style="background:var(--c-surface);border-top:1px solid var(--c-border);border-bottom:1px solid var(--c-border)">
-  <div class="api-section" id="api">
-    <div class="reveal">
-      <div class="section-label" style="margin-bottom:1.25rem">REST API</div>
-      <h2 class="section-title" style="margin-bottom:1.5rem">Predict with<br><span>Quantum Power</span></h2>
-      <p style="color:var(--c-muted);font-size:0.9rem;line-height:1.75;margin-bottom:2rem">
-        POST weather data to <code style="font-family:var(--font-mono);color:var(--c-cyan);font-size:0.8rem">/api/predict</code> and receive quantum-enhanced disaster predictions with risk scores and evacuation routes.
-      </p>
-      <div style="display:flex;flex-direction:column;gap:0.75rem;font-family:var(--font-mono);font-size:0.72rem">
-        <div style="display:flex;gap:1rem;align-items:center">
-          <span style="color:var(--c-green);width:50px">POST</span>
-          <span style="color:var(--c-muted)">/api/predict</span>
-        </div>
-        <div style="display:flex;gap:1rem;align-items:center">
-          <span style="color:var(--c-cyan);width:50px">POST</span>
-          <span style="color:var(--c-muted)">/api/route</span>
-        </div>
-        <div style="display:flex;gap:1rem;align-items:center">
-          <span style="color:var(--c-cyan);width:50px">GET</span>
-          <span style="color:var(--c-muted)">/api/status</span>
-        </div>
-        <div style="display:flex;gap:1rem;align-items:center">
-          <span style="color:var(--c-cyan);width:50px">GET</span>
-          <span style="color:var(--c-muted)">/api/quantum-info</span>
-        </div>
-      </div>
+<section class="api-section" id="api">
+  <div class="api-info reveal">
+    <h2>Predict with<br><span>Quantum Power</span></h2>
+    <p>POST weather data to <code>/api/predict</code> and receive quantum-enhanced disaster predictions with risk scores and evacuation routes.</p>
+    <div class="api-routes">
+      <div class="api-route"><span class="route-method post">POST</span> /api/predict</div>
+      <div class="api-route"><span class="route-method post">POST</span> /api/route</div>
+      <div class="api-route"><span class="route-method get">GET</span> /api/status</div>
+      <div class="api-route"><span class="route-method get">GET</span> /api/quantum-info</div>
     </div>
-    <div class="api-code reveal">
-      <div class="api-code-header">
-        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-        <div class="code-lang">api/predict · POST</div>
-      </div>
-      <pre><span class="c-cm"># Request</span>
+  </div>
+  <div class="api-code reveal">
+    <div class="api-code-header">
+      <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+      <div class="code-lang">api/predict · POST</div>
+    </div>
+    <pre><span class="c-cm"># Request</span>
 curl -X POST <span class="c-str">http://localhost:5000/api/predict</span> \
   -H <span class="c-str">"Content-Type: application/json"</span> \
-  -d <span class="c-str">'{"city": "London"}'</span>
+  -d <span class="c-str">'{"city": "Mumbai"}'</span>
 
 <span class="c-cm"># Response</span>
 {
-  <span class="c-key">"disaster_type"</span>: <span class="c-str">"normal"</span>,
-  <span class="c-key">"risk_percentage"</span>: <span class="c-num">10.9</span>,
-  <span class="c-key">"risk_level"</span>: <span class="c-str">"LOW"</span>,
+  <span class="c-key">"disaster_type"</span>: <span class="c-str">"cyclone"</span>,
+  <span class="c-key">"risk_percentage"</span>: <span class="c-num">87.3</span>,
+  <span class="c-key">"risk_level"</span>: <span class="c-str">"CRITICAL"</span>,
   <span class="c-key">"quantum_enabled"</span>: <span class="c-num">true</span>,
-  <span class="c-key">"quantum_metrics"</span>: {
-    <span class="c-key">"entropy"</span>: <span class="c-num">0.0</span>,
-    <span class="c-key">"purity"</span>: <span class="c-num">1.0</span>,
-    <span class="c-key">"advantage_score"</span>: <span class="c-num">0.0</span>
-  }
+  <span class="c-key">"evacuation_needed"</span>: <span class="c-num">true</span>
 }</pre>
-    </div>
   </div>
 </section>
 
 <section class="cta-section">
-  <div class="cta-glow"></div>
-  <h2 class="cta-title reveal">Quantum ML.<br>Deploy <span style="color:var(--c-accent)">Today.</span></h2>
+  <h2 class="cta-title reveal">Quantum ML.<br>Deploy <span>Today.</span></h2>
   <p class="cta-subtitle reveal">Free APIs. Zero infrastructure cost. One command to deploy. QiskitML is ready when disaster isn't.</p>
-  <div class="cta-actions reveal">
+  <div class="hero-actions reveal">
     <a href="https://github.com/SAICHARAN-TEJ/QISKIT" class="btn-primary">Clone on GitHub</a>
     <a href="/dashboard" class="btn-ghost">Launch App →</a>
   </div>
@@ -814,133 +1145,272 @@ curl -X POST <span class="c-str">http://localhost:5000/api/predict</span> \
 </footer>
 
 <script>
-const cursor = document.getElementById('cursor');
-const ring = document.getElementById('cursor-ring');
-let mx = 0, my = 0, rx = 0, ry = 0;
-document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
-(function animCursor() {
-  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-  requestAnimationFrame(animCursor);
-})();
+/* City Database */
+const CITIES = {
+  "london": { name: "London", lat: 51.5074, lon: -0.1278 },
+  "new york": { name: "New York", lat: 40.7128, lon: -74.006 },
+  "tokyo": { name: "Tokyo", lat: 35.6762, lon: 139.6503 },
+  "paris": { name: "Paris", lat: 48.8566, lon: 2.3522 },
+  "sydney": { name: "Sydney", lat: -33.8688, lon: 151.2093 },
+  "dubai": { name: "Dubai", lat: 25.2048, lon: 55.2708 },
+  "singapore": { name: "Singapore", lat: 1.3521, lon: 103.8198 },
+  "mumbai": { name: "Mumbai", lat: 19.076, lon: 72.8777 },
+  "delhi": { name: "Delhi", lat: 28.7041, lon: 77.1025 },
+  "bangalore": { name: "Bangalore", lat: 12.9716, lon: 77.5946 },
+  "chennai": { name: "Chennai", lat: 13.0827, lon: 80.2707 },
+  "kolkata": { name: "Kolkata", lat: 22.5726, lon: 88.3639 },
+  "hyderabad": { name: "Hyderabad", lat: 17.385, lon: 78.4867 },
+  "jaipur": { name: "Jaipur", lat: 26.9124, lon: 75.7873 },
+  "kerala": { name: "Kerala", lat: 10.8505, lon: 76.2711 },
+  "rajasthan": { name: "Rajasthan", lat: 27.0238, lon: 74.2179 },
+  "gujarat": { name: "Gujarat", lat: 22.2587, lon: 71.1924 },
+  "himachal": { name: "Himachal Pradesh", lat: 31.1048, lon: 77.1734 },
+  "tamil nadu": { name: "Tamil Nadu", lat: 11.1271, lon: 78.6569 },
+  "los angeles": { name: "Los Angeles", lat: 34.0522, lon: -118.2437 },
+  "chicago": { name: "Chicago", lat: 41.8781, lon: -87.6298 },
+  "san francisco": { name: "San Francisco", lat: 37.7749, lon: -122.4194 },
+  "miami": { name: "Miami", lat: 25.7617, lon: -80.1918 },
+  "seattle": { name: "Seattle", lat: 47.6062, lon: -122.3321 },
+  "boston": { name: "Boston", lat: 42.3601, lon: -71.0589 },
+  "berlin": { name: "Berlin", lat: 52.52, lon: 13.405 },
+  "madrid": { name: "Madrid", lat: 40.4168, lon: -3.7038 },
+  "rome": { name: "Rome", lat: 41.9028, lon: 12.4964 },
+  "amsterdam": { name: "Amsterdam", lat: 52.3676, lon: 4.9041 },
+  "moscow": { name: "Moscow", lat: 55.7558, lon: 37.6173 },
+  "beijing": { name: "Beijing", lat: 39.9042, lon: 116.4074 },
+  "shanghai": { name: "Shanghai", lat: 31.2304, lon: 121.4737 },
+  "hong kong": { name: "Hong Kong", lat: 22.3193, lon: 114.1694 },
+  "seoul": { name: "Seoul", lat: 37.5665, lon: 126.978 },
+  "bangkok": { name: "Bangkok", lat: 13.7563, lon: 100.5018 },
+  "jakarta": { name: "Jakarta", lat: -6.2088, lon: 106.8456 },
+  "toronto": { name: "Toronto", lat: 43.6532, lon: -79.3832 },
+  "vancouver": { name: "Vancouver", lat: 49.2827, lon: -123.1207 },
+  "melbourne": { name: "Melbourne", lat: -37.8136, lon: 144.9631 },
+  "cape town": { name: "Cape Town", lat: -33.9249, lon: 18.4241 },
+  "nairobi": { name: "Nairobi", lat: -1.2921, lon: 36.8219 },
+  "rio": { name: "Rio de Janeiro", lat: -22.9068, lon: -43.1729 },
+};
 
-(function() {
-  const canvas = document.getElementById('canvas-bg');
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-  camera.position.z = 80;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setClearColor(0x000000, 0);
+/* City Search */
+const searchInput = document.getElementById('citySearch');
+const searchResults = document.getElementById('searchResults');
+const launchBtn = document.getElementById('launchBtn');
 
-  const count = 3000;
-  const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
-  const col = new Float32Array(count * 3);
-  const sizes = new Float32Array(count);
-
-  for (let i = 0; i < count; i++) {
-    const phi = Math.acos(2 * Math.random() - 1);
-    const theta = Math.random() * Math.PI * 2;
-    const r = 30 + Math.random() * 25;
-    pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-    pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-    pos[i*3+2] = r * Math.cos(phi);
-    const isAccent = Math.random() < 0.08;
-    col[i*3]   = isAccent ? 0.0 : 0.2 + Math.random() * 0.15;
-    col[i*3+1] = isAccent ? 0.83 : 0.35 + Math.random() * 0.15;
-    col[i*3+2] = isAccent ? 1.0 : 0.55 + Math.random() * 0.25;
-    sizes[i] = isAccent ? 1.8 : 0.6 + Math.random() * 0.8;
+searchInput.addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase().trim();
+  if (query.length < 1) {
+    searchResults.classList.remove('active');
+    return;
   }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-  const mat = new THREE.ShaderMaterial({
-    uniforms: { uTime: { value: 0 } },
-    vertexShader: `
-      attribute float size;
-      attribute vec3 color;
-      varying vec3 vColor;
-      varying float vAlpha;
-      uniform float uTime;
-      void main() {
-        vColor = color;
-        vec3 p = position;
-        float offset = sin(uTime * 0.4 + p.x * 0.05 + p.y * 0.04) * 0.8;
-        p.y += offset;
-        vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        gl_PointSize = size * (300.0 / -mv.z);
-        gl_Position = projectionMatrix * mv;
-        vAlpha = 0.4 + 0.6 * (sin(uTime * 0.3 + p.z * 0.1) * 0.5 + 0.5);
-      }
-    `,
-    fragmentShader: `
-      varying vec3 vColor;
-      varying float vAlpha;
-      void main() {
-        float d = length(gl_PointCoord - 0.5);
-        if(d > 0.5) discard;
-        float alpha = smoothstep(0.5, 0.0, d) * vAlpha;
-        gl_FragColor = vec4(vColor, alpha);
-      }
-    `,
-    transparent: true, depthWrite: false, vertexColors: true,
-  });
+  const matches = Object.entries(CITIES)
+    .filter(([key, val]) => val.name.toLowerCase().includes(query) || key.includes(query))
+    .slice(0, 6);
 
-  const points = new THREE.Points(geo, mat);
-  scene.add(points);
-
-  const lineGeo = new THREE.BufferGeometry();
-  const linePos = [];
-  for (let i = 0; i < 80; i++) {
-    const a = Math.floor(Math.random() * count);
-    const b = Math.floor(Math.random() * count);
-    linePos.push(pos[a*3], pos[a*3+1], pos[a*3+2], pos[b*3], pos[b*3+1], pos[b*3+2]);
+  if (matches.length > 0) {
+    searchResults.innerHTML = matches.map(([key, val]) => `
+      <div class="search-result-item" data-city="${val.name}" data-lat="${val.lat}" data-lon="${val.lon}">
+        <svg class="search-result-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        <div>
+          <div class="search-result-name">${val.name}</div>
+          <div class="search-result-coords">${val.lat.toFixed(2)}°, ${val.lon.toFixed(2)}°</div>
+        </div>
+      </div>
+    `).join('');
+    searchResults.classList.add('active');
+  } else {
+    searchResults.classList.remove('active');
   }
-  lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(linePos), 3));
-  const lineMat = new THREE.LineBasicMaterial({ color: 0x0d4f6e, transparent: true, opacity: 0.15 });
-  scene.add(new THREE.LineSegments(lineGeo, lineMat));
-
-  let mouseX = 0, mouseY = 0;
-  document.addEventListener('mousemove', e => {
-    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-  });
-
-  window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-  });
-
-  const clock = new THREE.Clock();
-  (function animate() {
-    requestAnimationFrame(animate);
-    const t = clock.getElapsedTime();
-    mat.uniforms.uTime.value = t;
-    points.rotation.y = t * 0.04 + mouseX * 0.15;
-    points.rotation.x = mouseY * 0.08;
-    renderer.render(scene, camera);
-  })();
-})();
-
-gsap.registerPlugin(ScrollTrigger);
-
-const tl = gsap.timeline({ delay: 0.3 });
-tl.to('.hero-eyebrow', { opacity: 1, duration: 0.8, ease: 'power2.out' })
-  .to('.hero-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, '-=0.4')
-  .to('.hero-desc', { opacity: 1, duration: 0.7, ease: 'power2.out' }, '-=0.5')
-  .to('.hero-actions', { opacity: 1, duration: 0.7, ease: 'power2.out' }, '-=0.4');
-
-ScrollTrigger.create({
-  start: 'top -50',
-  onUpdate: self => document.getElementById('nav').classList.toggle('scrolled', self.progress > 0)
 });
 
-gsap.utils.toArray('.reveal').forEach(el => {
+searchResults.addEventListener('click', (e) => {
+  const item = e.target.closest('.search-result-item');
+  if (item) {
+    const city = item.dataset.city;
+    const lat = item.dataset.lat;
+    const lon = item.dataset.lon;
+    
+    searchInput.value = city;
+    searchResults.classList.remove('active');
+    
+    // Update launch button to include city
+    launchBtn.href = `/dashboard?city=${encodeURIComponent(city)}&lat=${lat}&lon=${lon}`;
+    
+    // Show selection feedback
+    gsap.to(searchInput, { borderColor: '#0d9488', duration: 0.3 });
+    setTimeout(() => gsap.to(searchInput, { borderColor: '#e8e6e1', duration: 0.3 }), 500);
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-container')) {
+    searchResults.classList.remove('active');
+  }
+});
+
+/* 3D Scene - Three.js */
+const canvas = document.getElementById('hero-canvas');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 35;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0);
+
+/* Particle System - Quantum Qubits */
+const particleCount = 1200;
+const particleGeometry = new THREE.BufferGeometry();
+const positions = new Float32Array(particleCount * 3);
+const colors = new Float32Array(particleCount * 3);
+const sizes = new Float32Array(particleCount);
+
+for (let i = 0; i < particleCount; i++) {
+  const phi = Math.acos(2 * Math.random() - 1);
+  const theta = Math.random() * Math.PI * 2;
+  const r = 15 + Math.random() * 12;
+  
+  positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+  positions[i * 3 + 2] = r * Math.cos(phi);
+  
+  const isAccent = Math.random() < 0.07;
+  colors[i * 3] = isAccent ? 0.05 : 0.9 + Math.random() * 0.1;
+  colors[i * 3 + 1] = isAccent ? 0.58 : 0.9 + Math.random() * 0.08;
+  colors[i * 3 + 2] = isAccent ? 0.53 : 0.88 + Math.random() * 0.1;
+  
+  sizes[i] = isAccent ? 0.4 : 0.12 + Math.random() * 0.15;
+}
+
+particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+const particleMaterial = new THREE.ShaderMaterial({
+  uniforms: { uTime: { value: 0 } },
+  vertexShader: `
+    attribute float size;
+    attribute vec3 color;
+    varying vec3 vColor;
+    varying float vAlpha;
+    uniform float uTime;
+    void main() {
+      vColor = color;
+      vec3 pos = position;
+      float wave = sin(uTime * 0.4 + position.x * 0.08 + position.y * 0.06) * 0.8;
+      pos.y += wave;
+      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = size * (200.0 / -mvPosition.z);
+      gl_Position = projectionMatrix * mvPosition;
+      vAlpha = 0.5 + 0.5 * sin(uTime * 0.5 + position.z * 0.1);
+    }
+  `,
+  fragmentShader: `
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main() {
+      float dist = length(gl_PointCoord - vec2(0.5));
+      if (dist > 0.5) discard;
+      float alpha = smoothstep(0.5, 0.0, dist) * vAlpha * 0.6;
+      gl_FragColor = vec4(vColor, alpha);
+    }
+  `,
+  transparent: true,
+  depthWrite: false,
+  vertexColors: true
+});
+
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particles);
+
+/* Connecting Lines - Quantum Entanglement */
+const lineGeometry = new THREE.BufferGeometry();
+const linePositions = [];
+for (let i = 0; i < 40; i++) {
+  const idx1 = Math.floor(Math.random() * particleCount);
+  const idx2 = Math.floor(Math.random() * particleCount);
+  linePositions.push(
+    positions[idx1 * 3], positions[idx1 * 3 + 1], positions[idx1 * 3 + 2],
+    positions[idx2 * 3], positions[idx2 * 3 + 1], positions[idx2 * 3 + 2]
+  );
+}
+lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+const lineMaterial = new THREE.LineBasicMaterial({ 
+  color: 0x0d9488, 
+  transparent: true, 
+  opacity: 0.08 
+});
+const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
+scene.add(lines);
+
+/* Floating Quantum Gates */
+const gateGroup = new THREE.Group();
+const gateGeometry = new THREE.TorusGeometry(0.5, 0.08, 8, 32);
+const gateMaterial = new THREE.MeshBasicMaterial({ color: 0x0d9488, transparent: true, opacity: 0.4 });
+
+for (let i = 0; i < 5; i++) {
+  const gate = new THREE.Mesh(gateGeometry, gateMaterial);
+  gate.position.set(
+    (Math.random() - 0.5) * 25,
+    (Math.random() - 0.5) * 20,
+    (Math.random() - 0.5) * 10
+  );
+  gate.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+  gateGroup.add(gate);
+}
+scene.add(gateGroup);
+
+let mouseX = 0, mouseY = 0;
+document.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+});
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const time = clock.getElapsedTime();
+  
+  particleMaterial.uniforms.uTime.value = time;
+  particles.rotation.y = time * 0.04 + mouseX * 0.15;
+  particles.rotation.x = mouseY * 0.08;
+  
+  gateGroup.rotation.y = time * 0.1;
+  gateGroup.children.forEach((gate, i) => {
+    gate.rotation.x = time * 0.3 + i;
+    gate.rotation.z = time * 0.2;
+  });
+  
+  renderer.render(scene, camera);
+}
+animate();
+
+/* GSAP Animations */
+gsap.registerPlugin(ScrollTrigger);
+
+gsap.to('.hero-badge', { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.2 });
+gsap.to('.hero-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.3 });
+gsap.to('.hero-desc', { opacity: 1, duration: 0.7, ease: 'power2.out', delay: 0.5 });
+gsap.to('.search-container', { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.6 });
+gsap.to('.hero-actions', { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.7 });
+
+ScrollTrigger.create({
+  start: 'top -60',
+  onUpdate: (self) => {
+    document.getElementById('nav').classList.toggle('scrolled', self.progress > 0);
+  }
+});
+
+gsap.utils.toArray('.reveal').forEach((el) => {
   gsap.to(el, {
     scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
     opacity: 1, y: 0, duration: 0.8, ease: 'power3.out'
@@ -948,7 +1418,7 @@ gsap.utils.toArray('.reveal').forEach(el => {
 });
 
 ScrollTrigger.create({
-  trigger: '.disaster-grid',
+  trigger: '.risk-grid',
   start: 'top 80%',
   onEnter: () => {
     document.querySelectorAll('.risk-bar-fill').forEach(bar => {
@@ -957,33 +1427,44 @@ ScrollTrigger.create({
   }
 });
 
-function animCounters() {
+/* Counter Animation */
+function animateCounters() {
   document.querySelectorAll('.counter').forEach(el => {
     const target = parseFloat(el.dataset.target);
     const isFloat = target % 1 !== 0;
     let start = 0;
-    const step = target / 60;
+    const step = target / 50;
     const timer = setInterval(() => {
       start += step;
       if (start >= target) { start = target; clearInterval(timer); }
       el.textContent = isFloat ? start.toFixed(1) : Math.floor(start);
-    }, 16);
+    }, 25);
   });
 }
-ScrollTrigger.create({ trigger: '.metrics-section', start: 'top 80%', onEnter: animCounters });
+ScrollTrigger.create({ trigger: '.metrics-section', start: 'top 80%', onEnter: animateCounters });
 
-function fluctuate() {
-  const ids = ['risk-cyclone','risk-heat','risk-flood','risk-blizzard','risk-eq'];
+/* Risk Value Fluctuation */
+function fluctuateRisks() {
+  const ids = ['risk-cyclone', 'risk-heat', 'risk-flood', 'risk-blizzard', 'risk-eq'];
   const bases = [87, 78, 71, 54, 32];
   ids.forEach((id, i) => {
     const el = document.getElementById(id);
     if (el) {
-      const v = bases[i] + Math.floor((Math.random() - 0.5) * 5);
-      el.innerHTML = v + '<span style="font-size:1.2rem;color:var(--c-muted)">%</span>';
+      const v = bases[i] + Math.floor((Math.random() - 0.5) * 6);
+      el.innerHTML = v + '<span class="percent">%</span>';
     }
   });
 }
-setInterval(fluctuate, 8000);
+setInterval(fluctuateRisks, 6000);
+
+/* Check for city in URL on dashboard */
+if (window.location.pathname === '/dashboard') {
+  const params = new URLSearchParams(window.location.search);
+  const city = params.get('city');
+  if (city) {
+    document.getElementById('cityInput').value = city;
+  }
+}
 </script>
 </body>
 </html>
