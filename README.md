@@ -4,6 +4,10 @@
 ![Qiskit](https://img.shields.io/badge/Powered_by-Qiskit-6929c8?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.11+-3776ab?style=for-the-badge)
 
+## 🔗 Live Demo
+
+**🌐 https://qiskit-7xhj.onrender.com**
+
 Real-time disaster prediction using **Quantum Machine Learning** powered by **IBM Qiskit**. This project leverages variational quantum circuits, quantum feature maps, and quantum kernel methods for enhanced disaster classification.
 
 ## Quantum Technology Stack
