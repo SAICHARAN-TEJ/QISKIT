@@ -424,7 +424,7 @@ def dashboard():
 def api_predict():
     try:
         data = request.get_json() or {}
-        city = data.get('city', 'London')
+        city = data.get('city', 'Chennai')
         
         city = SecurityConfig.sanitize_input(city, 50)
         if not re.match(r'^[a-zA-Z\s\-]+$', city):
@@ -506,8 +506,8 @@ def get_city_coordinates(city_name):
         if city_lower in city or city in city_lower:
             return coords
     
-    # Default to London
-    return (51.5074, -0.1278)
+    # Default to Chennai
+    return (13.0827, 80.2707)
 
 
 @app.route('/api/route', methods=['POST'])
