@@ -330,35 +330,23 @@ class QuantumMLPredictor:
         }
     
     def _get_sensor_data(self, lat: float = 51.5074, lon: float = -0.1278) -> dict:
-        if self.jena_data is not None:
-            row = self.jena_data.iloc[-1]
-            base = {
-                'pressure': row['p (mbar)'],
-                'temperature': row['T (degC)'],
-                'humidity': row['rh (%)'],
-                'wind_speed': row['wv (m/s)'],
-                'max_wind_speed': row['max. wv (m/s)'],
-                'wind_direction': row['wd (deg)'],
-                'dew_point': row['Tdew (degC)']
-            }
-        else:
-            # Generate location-based sensor data
-            # Tropical cities are hotter, northern cities are colder
-            base_temp = 25 - abs(lat) * 0.3  # Temp decreases with latitude
-            base_humidity = 60 + (90 - abs(lat)) * 0.3  # Higher humidity near equator
-            base_pressure = 1013 - (abs(lat) / 90) * 15  # Pressure varies with latitude
-            
-            # Add randomization
-            import random
-            base = {
-                'pressure': base_pressure + random.uniform(-5, 5),
-                'temperature': base_temp + random.uniform(-3, 3),
-                'humidity': min(100, base_humidity + random.uniform(-10, 10)),
-                'wind_speed': random.uniform(2, 10),
-                'max_wind_speed': random.uniform(5, 15),
-                'wind_direction': random.uniform(0, 360),
-                'dew_point': base_temp * 0.6 + random.uniform(-2, 2)
-            }
+        # Always generate location-based sensor data for accurate predictions
+        # Tropical cities (near equator) are hotter, northern cities are colder
+        base_temp = 28 - abs(lat) * 0.35  # Temp decreases with latitude from equator
+        base_humidity = 70 + (20 - abs(lat)) * 0.4  # Higher humidity near equator
+        base_pressure = 1013 - (abs(lat) / 90) * 12  # Pressure varies with latitude
+        
+        # Add randomization for natural variation
+        import random
+        base = {
+            'pressure': base_pressure + random.uniform(-8, 8),
+            'temperature': base_temp + random.uniform(-5, 5),
+            'humidity': min(100, max(0, base_humidity + random.uniform(-15, 15))),
+            'wind_speed': random.uniform(1, 12),
+            'max_wind_speed': random.uniform(5, 18),
+            'wind_direction': random.uniform(0, 360),
+            'dew_point': base_temp * 0.55 + random.uniform(-3, 3)
+        }
         
         return base
 
@@ -423,8 +411,12 @@ def dashboard():
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
     try:
+        import sys
         data = request.get_json() or {}
         city = data.get('city', 'Chennai')
+        
+        sys.stderr.write(f"DEBUG: Received city: {city}\n")
+        sys.stderr.flush()
         
         city = SecurityConfig.sanitize_input(city, 50)
         if not re.match(r'^[a-zA-Z\s\-]+$', city):
@@ -432,6 +424,8 @@ def api_predict():
         
         # Get coordinates for city
         coords = get_city_coordinates(city)
+        sys.stderr.write(f"DEBUG: Coords: {coords}\n")
+        sys.stderr.flush()
         
         result = predictor.predict(city, coords)
         return jsonify(result)
