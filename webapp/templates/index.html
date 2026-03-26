@@ -6,45 +6,46 @@
 <title>QiskitML — Quantum Disaster Prediction</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
 <style>
   :root {
-    --bg-deep: #0a0a0c;
-    --bg-primary: #111114;
-    --bg-card: #1a1a1f;
-    --bg-elevated: #222229;
-    --text-primary: #f5f5f7;
-    --text-secondary: #a1a1a6;
-    --text-muted: #6e6e73;
-    --accent: #00d4aa;
-    --accent-glow: rgba(0, 212, 170, 0.4);
-    --accent-soft: rgba(0, 212, 170, 0.08);
-    --accent-subtle: rgba(0, 212, 170, 0.15);
-    --border: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.15);
-    --shadow-glow: 0 0 60px rgba(0, 212, 170, 0.15);
-    --radius-sm: 8px;
-    --radius-md: 16px;
-    --radius-lg: 24px;
-    --radius-xl: 40px;
+    --bg-deep: #060608;
+    --bg-primary: #0c0c0f;
+    --bg-card: #131318;
+    --bg-card-hover: #1a1a22;
+    --text-primary: #ffffff;
+    --text-secondary: #8b8b99;
+    --text-muted: #52525e;
+    --accent: #22d3ee;
+    --accent-hover: #06b6d4;
+    --accent-glow: rgba(34, 211, 238, 0.3);
+    --accent-soft: rgba(34, 211, 238, 0.06);
+    --accent-subtle: rgba(34, 211, 238, 0.12);
+    --border: rgba(255, 255, 255, 0.06);
+    --border-hover: rgba(255, 255, 255, 0.12);
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 32px;
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    font-family: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-deep);
     color: var(--text-primary);
     overflow-x: hidden;
-    line-height: 1.6;
+    line-height: 1.5;
     min-height: 100vh;
   }
 
-  /* 3D Canvas Background */
+  /* Animated Background */
   #canvas-container {
     position: fixed;
     top: 0;
@@ -54,21 +55,18 @@
     z-index: 0;
     pointer-events: none;
   }
-  #canvas-container canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
 
-  /* Noise Overlay */
+  /* Subtle grid pattern */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    opacity: 0.03;
+    background-image: 
+      linear-gradient(rgba(34, 211, 238, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 1;
     pointer-events: none;
-    z-index: 9999;
   }
 
   /* Navigation */
@@ -78,44 +76,50 @@
     left: 0;
     right: 0;
     z-index: 100;
-    padding: 1.5rem 3rem;
+    padding: 1.25rem 2.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(to bottom, rgba(10, 10, 12, 0.9), transparent);
-    transition: all 0.4s ease;
+    background: linear-gradient(to bottom, rgba(6, 6, 8, 0.9), transparent);
+    transition: all 0.4s var(--ease-out-expo);
   }
   nav.scrolled {
-    padding: 1rem 3rem;
-    background: rgba(10, 10, 12, 0.95);
+    padding: 0.85rem 2.5rem;
+    background: rgba(6, 6, 8, 0.92);
     backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
   }
 
   .nav-logo {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 1.4rem;
-    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--text-primary);
     text-decoration: none;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
   }
-  .nav-logo svg {
+  .nav-logo-icon {
     width: 28px;
     height: 28px;
-    color: var(--accent);
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-deep);
+    font-weight: 700;
+    font-size: 0.9rem;
   }
-  .nav-logo span { color: var(--accent); }
-
-  .nav-links { display: flex; gap: 2.5rem; align-items: center; }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
   .nav-links a {
     font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-secondary);
     text-decoration: none;
-    transition: color 0.2s;
+    transition: all 0.25s var(--ease-out-quart);
     position: relative;
   }
   .nav-links a::after {
@@ -124,37 +128,29 @@
     bottom: -4px;
     left: 0;
     width: 0;
-    height: 1px;
+    height: 2px;
     background: var(--accent);
-    transition: width 0.3s ease;
+    transition: width 0.3s var(--ease-out-expo);
   }
   .nav-links a:hover { color: var(--text-primary); }
   .nav-links a:hover::after { width: 100%; }
 
   .nav-cta {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: var(--accent);
-    border: 1px solid var(--accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bg-deep);
+    background: var(--accent);
+    border: none;
     padding: 0.6rem 1.25rem;
     border-radius: var(--radius-sm);
     text-decoration: none;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+    transition: all 0.3s var(--ease-out-expo);
   }
-  .nav-cta::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--accent);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: -1;
+  .nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow);
   }
-  .nav-cta:hover { color: var(--bg-deep); }
-  .nav-cta:hover::before { transform: translateX(0); }
 
   /* Hero Section */
   #hero {
@@ -164,99 +160,88 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8rem 2rem 4rem;
+    padding: 6rem 1.5rem 4rem;
     z-index: 2;
   }
 
   .hero-content {
-    max-width: 700px;
+    max-width: 680px;
     text-align: center;
   }
 
   .hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    padding: 0.6rem 1.1rem;
+    padding: 0.5rem 1rem;
     border-radius: 50px;
     font-size: 0.72rem;
     font-weight: 600;
     color: var(--accent);
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-glow);
+    margin-bottom: 1.5rem;
     opacity: 0;
     transform: translateY(20px);
   }
 
   .hero-title {
-    font-family: 'Clash Display', sans-serif;
-    font-size: clamp(3.5rem, 10vw, 6.5rem);
-    font-weight: 600;
-    line-height: 1.02;
-    letter-spacing: -0.04em;
-    margin-bottom: 1.5rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(3rem, 9vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.25rem;
     opacity: 0;
     transform: translateY(30px);
   }
   .hero-title .accent { 
     color: var(--accent);
-    text-shadow: 0 0 60px var(--accent-glow);
   }
   .hero-title .sub {
     display: block;
-    font-size: 0.22em;
-    letter-spacing: 0.01em;
+    font-size: 0.24em;
+    letter-spacing: 0.005em;
     color: var(--text-muted);
-    margin-top: 0.35em;
+    margin-top: 0.3em;
     font-weight: 500;
-    font-family: 'Syne', sans-serif;
   }
 
   .hero-desc {
-    font-size: 1.15rem;
-    line-height: 1.75;
+    font-size: 1.1rem;
+    line-height: 1.7;
     color: var(--text-secondary);
-    margin: 0 auto 2.5rem;
-    max-width: 480px;
+    margin: 0 auto 2rem;
+    max-width: 460px;
     opacity: 0;
   }
 
-  /* 3D Search Container */
+  /* Search */
   .search-wrapper {
     position: relative;
-    max-width: 460px;
-    margin: 0 auto 2.5rem;
+    max-width: 440px;
+    margin: 0 auto 2rem;
     opacity: 0;
-    perspective: 1000px;
   }
 
-  .search-3d {
+  .search-box {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 0.5rem;
+    padding: 0.4rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    transition: all 0.4s ease;
-    transform-style: preserve-3d;
-    box-shadow: 
-      0 4px 20px rgba(0, 0, 0, 0.3),
-      0 0 40px rgba(0, 212, 170, 0.05);
+    gap: 0.5rem;
+    transition: all 0.3s var(--ease-out-expo);
   }
-  .search-3d:focus-within {
+  .search-box:focus-within {
     border-color: var(--accent);
-    box-shadow: 
-      0 8px 40px rgba(0, 0, 0, 0.4),
-      0 0 60px rgba(0, 212, 170, 0.15);
-    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 32px rgba(0,0,0,0.3);
   }
 
   .search-icon {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,6 +249,7 @@
     border-radius: var(--radius-md);
     color: var(--accent);
     flex-shrink: 0;
+    margin-left: 0.3rem;
   }
 
   .search-input {
@@ -271,10 +257,11 @@
     background: transparent;
     border: none;
     color: var(--text-primary);
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
     outline: none;
-    padding: 0.5rem;
+    padding: 0.6rem 0.5rem;
   }
   .search-input::placeholder { color: var(--text-muted); }
 
@@ -282,48 +269,48 @@
     background: var(--accent);
     color: var(--bg-deep);
     border: none;
-    padding: 0.75rem 1.5rem;
+    padding: 0.7rem 1.5rem;
     border-radius: var(--radius-md);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-out-expo);
   }
   .search-btn:hover {
-    transform: scale(1.05);
+    transform: scale(1.02);
     box-shadow: 0 4px 20px var(--accent-glow);
   }
 
   .search-results {
     position: absolute;
-    top: calc(100% + 12px);
+    top: calc(100% + 8px);
     left: 0;
     right: 0;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    max-height: 320px;
+    max-height: 280px;
     overflow-y: auto;
     z-index: 50;
     display: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
   }
   .search-results.active { display: block; }
 
   .search-result-item {
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    transition: background 0.2s;
+    transition: background 0.15s;
   }
   .search-result-item:hover { background: var(--accent-soft); }
   .search-result-item svg { color: var(--accent); flex-shrink: 0; }
-  .search-result-name { font-weight: 500; font-size: 0.95rem; }
+  .search-result-name { font-weight: 500; font-size: 0.9rem; }
   .search-result-coords { 
-    font-size: 0.72rem; 
+    font-size: 0.7rem; 
     color: var(--text-muted); 
     font-family: 'JetBrains Mono', monospace;
     margin-left: auto;
@@ -332,105 +319,91 @@
   /* Hero Actions */
   .hero-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.85rem;
     justify-content: center;
     opacity: 0;
   }
 
   .btn-primary {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
     font-weight: 600;
-    padding: 1rem 2.25rem;
+    padding: 0.85rem 1.75rem;
     border-radius: var(--radius-md);
     background: var(--accent);
     color: var(--bg-deep);
     border: none;
     text-decoration: none;
     display: inline-block;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px var(--accent-glow);
+    transition: all 0.3s var(--ease-out-expo);
   }
   .btn-primary:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 8px 40px var(--accent-glow);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px var(--accent-glow);
   }
   .btn-ghost {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
     font-weight: 600;
-    padding: 1rem 2.25rem;
+    padding: 0.85rem 1.75rem;
     border-radius: var(--radius-md);
     background: transparent;
     color: var(--text-primary);
     border: 1px solid var(--border);
     text-decoration: none;
     display: inline-block;
-    transition: all 0.3s ease;
+    transition: all 0.3s var(--ease-out-expo);
   }
   .btn-ghost:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-    transform: translateY(-3px);
-  }
-
-  /* Floating 3D Elements */
-  .floating-element {
-    position: absolute;
-    border-radius: var(--radius-lg);
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-glow);
-    opacity: 0.6;
-    pointer-events: none;
+    border-color: var(--text-secondary);
+    transform: translateY(-2px);
   }
 
   /* Stats Section */
   .stats-section {
     position: relative;
     z-index: 2;
-    padding: 4rem 3rem;
-    max-width: 1200px;
+    padding: 3.5rem 1.5rem;
+    max-width: 1000px;
     margin: 0 auto;
   }
 
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .stat-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 2rem;
+    padding: 1.5rem;
     text-align: center;
-    transition: all 0.4s ease;
-    transform-style: preserve-3d;
+    transition: all 0.35s var(--ease-out-expo);
   }
   .stat-card:hover {
-    transform: translateY(-8px) rotateX(5deg);
+    transform: translateY(-4px);
     border-color: var(--accent-subtle);
-    box-shadow: var(--shadow-glow);
+    background: var(--bg-card-hover);
   }
 
   .stat-value {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 3rem;
-    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
     color: var(--text-primary);
     line-height: 1.1;
   }
   .stat-value .unit {
-    font-size: 0.3em;
+    font-size: 0.32em;
     color: var(--accent);
-    font-weight: 500;
+    font-weight: 600;
   }
   .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    margin-top: 0.5rem;
+    margin-top: 0.35rem;
     font-weight: 500;
   }
 
@@ -438,34 +411,34 @@
   .dashboard-section {
     position: relative;
     z-index: 2;
-    padding: 5rem 3rem;
-    max-width: 1200px;
+    padding: 4rem 1.5rem;
+    max-width: 1100px;
     margin: 0 auto;
   }
 
   .section-header {
     text-align: center;
-    margin-bottom: 3.5rem;
+    margin-bottom: 3rem;
   }
   .section-title {
-    font-family: 'Clash Display', sans-serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
   }
   .section-title span { color: var(--accent); }
   .section-subtitle {
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: var(--text-secondary);
   }
   .live-indicator {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.75rem;
+    gap: 0.4rem;
+    font-size: 0.72rem;
     color: var(--accent);
-    margin-top: 0.75rem;
+    margin-top: 0.6rem;
   }
   .live-dot {
     width: 6px;
@@ -473,332 +446,324 @@
     background: var(--accent);
     border-radius: 50%;
     animation: livePulse 2s ease-in-out infinite;
-    box-shadow: 0 0 10px var(--accent);
   }
   @keyframes livePulse { 
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.6; }
+    50% { transform: scale(0.8); opacity: 0.5; }
   }
 
-  /* Risk Cards Grid */
+  /* Risk Cards */
   .risk-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
   }
 
   .risk-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 1.75rem;
-    transition: all 0.4s ease;
-    transform-style: preserve-3d;
+    padding: 1.5rem;
+    transition: all 0.35s var(--ease-out-expo);
   }
   .risk-card:hover {
-    transform: translateY(-6px) rotateX(3deg);
-    border-color: var(--accent-subtle);
+    transform: translateY(-4px);
+    border-color: var(--border-hover);
+    background: var(--bg-card-hover);
   }
 
   .risk-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
   }
   .risk-type {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
   .risk-badge {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    padding: 0.3rem 0.6rem;
+    font-size: 0.58rem;
+    padding: 0.25rem 0.5rem;
     border-radius: 4px;
-    font-weight: 500;
+    font-weight: 600;
   }
-  .risk-critical { background: rgba(255, 69, 69, 0.15); color: #ff4545; }
-  .risk-high { background: rgba(255, 159, 5, 0.15); color: #ff9f05; }
-  .risk-medium { background: rgba(0, 212, 170, 0.15); color: var(--accent); }
-  .risk-low { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .risk-critical { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+  .risk-high { background: rgba(251, 146, 60, 0.12); color: #fb923c; }
+  .risk-medium { background: rgba(34, 211, 238, 0.12); color: var(--accent); }
+  .risk-low { background: rgba(52, 211, 153, 0.12); color: #34d399; }
 
   .risk-value {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
   .risk-value .percent { font-size: 0.85rem; color: var(--text-muted); }
 
   .risk-bar {
-    height: 4px;
+    height: 3px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
   }
   .risk-bar-fill {
     height: 100%;
     border-radius: 2px;
-    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 1.2s var(--ease-out-expo);
   }
 
   .risk-meta {
     display: flex;
-    gap: 1.5rem;
-    font-size: 0.75rem;
+    gap: 1.25rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
   }
-  .risk-meta strong { color: var(--text-primary); font-weight: 500; }
+  .risk-meta strong { color: var(--text-secondary); font-weight: 500; }
 
-  /* Quantum Status Card */
+  /* Quantum Card */
   .quantum-card {
-    background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+    background: linear-gradient(135deg, var(--bg-card), rgba(34, 211, 238, 0.05));
     border-color: var(--accent-subtle);
   }
   .quantum-info {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: var(--text-muted);
-    line-height: 2;
+    line-height: 1.85;
   }
   .quantum-info .active { color: var(--accent); }
-  .quantum-info strong { color: var(--text-primary); }
+  .quantum-info strong { color: var(--text-secondary); }
 
   /* Features Section */
   .features-section {
     position: relative;
     z-index: 2;
-    padding: 5rem 3rem;
+    padding: 4rem 1.5rem;
     background: var(--bg-primary);
   }
   .features-container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
   }
   .features-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .feature-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 2rem;
-    transition: all 0.4s ease;
-    transform-style: preserve-3d;
+    padding: 1.75rem;
+    transition: all 0.35s var(--ease-out-expo);
   }
   .feature-card:hover {
-    transform: translateY(-8px) rotateX(5deg);
-    border-color: var(--accent-subtle);
-    box-shadow: var(--shadow-glow);
+    transform: translateY(-4px);
+    border-color: var(--border-hover);
   }
   .feature-icon {
-    width: 52px;
-    height: 52px;
+    width: 44px;
+    height: 44px;
     background: var(--accent-soft);
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     color: var(--accent);
   }
   .feature-title {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 1.15rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
   }
   .feature-desc {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
-    line-height: 1.65;
+    line-height: 1.6;
   }
   .feature-tag {
     display: inline-block;
-    margin-top: 1rem;
+    margin-top: 0.85rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     color: var(--accent);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    border-bottom: 1px solid var(--accent-subtle);
-    padding-bottom: 2px;
   }
 
   /* Hazard Scroll */
   .hazard-scroll {
     position: relative;
     z-index: 2;
-    padding: 4rem 0;
+    padding: 3.5rem 0;
     overflow: hidden;
   }
   .hazard-scroll .section-header {
-    padding: 0 3rem;
-    max-width: 1200px;
-    margin: 0 auto 2.5rem;
+    padding: 0 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto 2rem;
   }
   .hazard-track {
     display: flex;
     width: max-content;
-    animation: hazardScroll 40s linear infinite;
+    animation: hazardScroll 45s linear infinite;
   }
   .hazard-track:hover { animation-play-state: paused; }
   @keyframes hazardScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
   .hazard-pill {
     background: var(--bg-card);
-    padding: 1.5rem 2rem;
-    min-width: 200px;
+    padding: 1.25rem 1.75rem;
+    min-width: 180px;
     border-right: 1px solid var(--border);
-    transition: all 0.3s;
+    transition: all 0.25s;
   }
-  .hazard-pill:hover { 
-    background: var(--accent-soft); 
-    transform: scale(1.02);
-  }
-  .hazard-icon { font-size: 1.6rem; margin-bottom: 0.4rem; }
+  .hazard-pill:hover { background: var(--accent-soft); }
+  .hazard-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
   .hazard-name {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 1.1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.95rem;
     font-weight: 600;
   }
   .hazard-thresh {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
+    font-size: 0.58rem;
     color: var(--text-muted);
-    margin-top: 0.3rem;
+    margin-top: 0.25rem;
   }
 
   /* API Section */
   .api-section {
     position: relative;
     z-index: 2;
-    padding: 5rem 3rem;
-    max-width: 1200px;
+    padding: 4rem 1.5rem;
+    max-width: 1100px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 4rem;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 3rem;
     align-items: center;
   }
   .api-info h2 {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 2.75rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.85rem;
     letter-spacing: -0.02em;
   }
   .api-info h2 span { color: var(--accent); }
   .api-info p {
     color: var(--text-secondary);
-    line-height: 1.75;
-    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
   }
   .api-info code {
     font-family: 'JetBrains Mono', monospace;
     background: var(--accent-soft);
     color: var(--accent);
-    padding: 3px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.88em;
   }
   .api-routes {
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.55rem;
   }
   .api-route {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.85rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
   }
   .route-method {
-    padding: 0.25rem 0.55rem;
-    border-radius: 4px;
-    font-size: 0.65rem;
-    font-weight: 500;
+    padding: 0.2rem 0.45rem;
+    border-radius: 3px;
+    font-size: 0.6rem;
+    font-weight: 600;
   }
-  .route-method.post { background: rgba(52, 211, 153, 0.15); color: #34d399; }
-  .route-method.get { background: rgba(0, 212, 170, 0.15); color: var(--accent); }
+  .route-method.post { background: rgba(52, 211, 153, 0.12); color: #34d399; }
+  .route-method.get { background: rgba(34, 211, 238, 0.12); color: var(--accent); }
 
   .api-code {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
   }
   .api-code-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    background: var(--bg-elevated);
+    padding: 0.85rem 1rem;
+    background: var(--bg-card-hover);
     border-bottom: 1px solid var(--border);
   }
-  .code-dots { display: flex; gap: 6px; }
-  .code-dot { width: 11px; height: 11px; border-radius: 50%; }
-  .code-dot:nth-child(1) { background: #ff5f57; }
-  .code-dot:nth-child(2) { background: #ffbd2e; }
-  .code-dot:nth-child(3) { background: #28ca42; }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dot:nth-child(1) { background: #ef4444; }
+  .code-dot:nth-child(2) { background: #fbbf24; }
+  .code-dot:nth-child(3) { background: #22c55e; }
   .code-lang {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     color: var(--text-muted);
   }
   .api-code pre {
-    padding: 1.5rem;
+    padding: 1.25rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem;
-    line-height: 1.8;
+    font-size: 0.68rem;
+    line-height: 1.75;
     overflow-x: auto;
     color: var(--text-secondary);
   }
   .c-key { color: var(--accent); }
   .c-str { color: #34d399; }
-  .c-num { color: #ff9f05; }
+  .c-num { color: #fbbf24; }
   .c-cm { color: var(--text-muted); }
 
   /* CTA Section */
   .cta-section {
     position: relative;
     z-index: 2;
-    padding: 7rem 3rem;
+    padding: 5rem 1.5rem;
     text-align: center;
     background: var(--bg-card);
     border-top: 1px solid var(--border);
   }
   .cta-title {
-    font-family: 'Clash Display', sans-serif;
-    font-size: clamp(2.5rem, 7vw, 4.5rem);
-    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.75rem);
+    font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
   }
-  .cta-title span { color: var(--accent); text-shadow: 0 0 60px var(--accent-glow); }
+  .cta-title span { color: var(--accent); }
   .cta-subtitle {
     color: var(--text-secondary);
-    font-size: 1.1rem;
-    max-width: 420px;
-    margin: 0 auto 2.5rem;
-    line-height: 1.65;
+    font-size: 1rem;
+    max-width: 380px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
   }
 
   /* Footer */
   footer {
     position: relative;
     z-index: 2;
-    padding: 2rem 3rem;
+    padding: 1.5rem 2.5rem;
     border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
@@ -806,39 +771,39 @@
     background: var(--bg-deep);
   }
   .footer-brand {
-    font-family: 'Clash Display', sans-serif;
-    font-size: 1.1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
     font-weight: 600;
   }
   .footer-brand span { color: var(--accent); }
   .footer-copy {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--text-muted);
   }
-  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links { display: flex; gap: 1.25rem; }
   .footer-links a {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     text-decoration: none;
     transition: color 0.2s;
   }
   .footer-links a:hover { color: var(--text-primary); }
 
-  .reveal { opacity: 0; transform: translateY(40px); }
+  .reveal { opacity: 0; transform: translateY(30px); }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 900px) {
     .stats-grid { grid-template-columns: 1fr 1fr; }
     .features-grid { grid-template-columns: 1fr 1fr; }
     .api-section { grid-template-columns: 1fr; gap: 2rem; }
   }
-  @media (max-width: 640px) {
+  @media (max-width: 600px) {
     nav { padding: 1rem 1.25rem; }
     .nav-links { display: none; }
     .stats-grid { grid-template-columns: 1fr; }
     .features-grid { grid-template-columns: 1fr; }
     .risk-grid { grid-template-columns: 1fr; }
     .hero-actions { flex-direction: column; align-items: center; }
-    footer { flex-direction: column; gap: 1rem; text-align: center; }
+    footer { flex-direction: column; gap: 0.85rem; text-align: center; }
   }
 </style>
 </head>
@@ -848,11 +813,8 @@
 
 <nav id="nav">
   <a href="#" class="nav-logo">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
-    </svg>
-    Qiskit<span>ML</span>
+    <div class="nav-logo-icon">⚛</div>
+    QiskitML
   </a>
   <div class="nav-links">
     <a href="#dashboard">Dashboard</a>
@@ -865,10 +827,8 @@
 <section id="hero">
   <div class="hero-content">
     <div class="hero-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-      </svg>
-      IBM Qiskit · VQC · ZZFeatureMap
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+      IBM Qiskit Powered
     </div>
 
     <h1 class="hero-title">
@@ -876,45 +836,45 @@
       <span class="sub">Quantum-Accelerated Disaster Prediction</span>
     </h1>
 
-    <p class="hero-desc">Harness quantum computing and machine learning for unprecedented disaster prediction accuracy across the globe.</p>
+    <p class="hero-desc">Real-time disaster prediction using quantum machine learning. Get accurate risk assessments for your location.</p>
 
     <div class="search-wrapper">
-      <div class="search-3d">
+      <div class="search-box">
         <div class="search-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
         </div>
-        <input type="text" class="search-input" id="citySearch" placeholder="Search city..." value="Chennai" autocomplete="off">
+        <input type="text" class="search-input" id="citySearch" placeholder="Search city or use your location..." value="Chennai" autocomplete="off">
         <button class="search-btn" onclick="launchWithCity()">Analyze</button>
       </div>
       <div class="search-results" id="searchResults"></div>
     </div>
 
     <div class="hero-actions">
-      <a href="/dashboard" class="btn-primary" id="launchBtn">Launch Application</a>
-      <a href="#api" class="btn-ghost">Explore API →</a>
+      <a href="/dashboard" class="btn-primary" id="launchBtn">Launch Dashboard</a>
+      <a href="#api" class="btn-ghost">View API →</a>
     </div>
   </div>
 </section>
 
 <section class="stats-section">
   <div class="stats-grid">
-    <div class="stat-card" data-tilt>
+    <div class="stat-card">
       <div class="stat-value"><span class="counter" data-target="4">0</span><span class="unit">qubits</span></div>
       <div class="stat-label">Quantum Processing</div>
     </div>
-    <div class="stat-card" data-tilt>
+    <div class="stat-card">
       <div class="stat-value"><span class="counter" data-target="99.7">0</span><span class="unit">%</span></div>
       <div class="stat-label">Prediction Accuracy</div>
     </div>
-    <div class="stat-card" data-tilt>
+    <div class="stat-card">
       <div class="stat-value"><span class="counter" data-target="5">0</span><span class="unit">types</span></div>
-      <div class="stat-label">Hazard Categories</div>
+      <div class="stat-label">Disaster Categories</div>
     </div>
-    <div class="stat-card" data-tilt>
+    <div class="stat-card">
       <div class="stat-value"><span class="counter" data-target="0">0</span><span class="unit">key</span></div>
-      <div class="stat-label">OSRM — Free Routing</div>
+      <div class="stat-label">OSRM Routing</div>
     </div>
   </div>
 </section>
@@ -927,82 +887,68 @@
   </div>
 
   <div class="risk-grid reveal">
-    <div class="risk-card" data-tilt>
+    <div class="risk-card">
       <div class="risk-card-header">
         <span class="risk-type">Cyclone</span>
         <span class="risk-badge risk-critical">Critical</span>
       </div>
-      <div class="risk-value" id="risk-cyclone">87<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#ff4545" data-width="87"></div></div>
+      <div class="risk-value" id="risk-cyclone">12<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#ef4444" data-width="12"></div></div>
       <div class="risk-meta">
-        <span><strong>18.4 m/s</strong> Wind</span>
-        <span><strong>974 hPa</strong> Pressure</span>
+        <span><strong>8.2 m/s</strong> Wind</span>
+        <span><strong>1012 hPa</strong></span>
       </div>
     </div>
 
-    <div class="risk-card" data-tilt>
+    <div class="risk-card">
       <div class="risk-card-header">
         <span class="risk-type">Heat Wave</span>
         <span class="risk-badge risk-high">High</span>
       </div>
-      <div class="risk-value" id="risk-heat">78<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#ff9f05" data-width="78"></div></div>
+      <div class="risk-value" id="risk-heat">28<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#fb923c" data-width="28"></div></div>
       <div class="risk-meta">
-        <span><strong>38.9°C</strong> Temperature</span>
-        <span><strong>64%</strong> Humidity</span>
+        <span><strong>34.5°C</strong></span>
+        <span><strong>72%</strong> Humidity</span>
       </div>
     </div>
 
-    <div class="risk-card" data-tilt>
+    <div class="risk-card">
       <div class="risk-card-header">
         <span class="risk-type">Flood</span>
-        <span class="risk-badge risk-high">High</span>
+        <span class="risk-badge risk-medium">Low</span>
       </div>
-      <div class="risk-value" id="risk-flood">71<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--accent)" data-width="71"></div></div>
+      <div class="risk-value" id="risk-flood">8<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--accent)" data-width="8"></div></div>
       <div class="risk-meta">
-        <span><strong>91.5%</strong> Humidity</span>
-        <span><strong>12.1°C</strong> Temp</span>
+        <span><strong>68%</strong> Humidity</span>
+        <span><strong>28°C</strong></span>
       </div>
     </div>
 
-    <div class="risk-card" data-tilt>
-      <div class="risk-card-header">
-        <span class="risk-type">Blizzard</span>
-        <span class="risk-badge risk-medium">Medium</span>
-      </div>
-      <div class="risk-value" id="risk-blizzard">54<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--accent)" data-width="54"></div></div>
-      <div class="risk-meta">
-        <span><strong>-6.2°C</strong> Temperature</span>
-        <span><strong>9.3 m/s</strong> Wind</span>
-      </div>
-    </div>
-
-    <div class="risk-card" data-tilt>
+    <div class="risk-card">
       <div class="risk-card-header">
         <span class="risk-type">Earthquake</span>
         <span class="risk-badge risk-low">Low</span>
       </div>
-      <div class="risk-value" id="risk-eq">32<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#34d399" data-width="32"></div></div>
+      <div class="risk-value" id="risk-eq">3<span class="percent">%</span></div>
+      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#34d399" data-width="3"></div></div>
       <div class="risk-meta">
-        <span><strong>982 hPa</strong> Pressure</span>
-        <span><strong>Stable</strong> Seismic</span>
+        <span><strong>1013 hPa</strong></span>
+        <span><strong>Stable</strong></span>
       </div>
     </div>
 
-    <div class="risk-card quantum-card" data-tilt>
+    <div class="risk-card quantum-card">
       <div class="risk-card-header">
-        <span class="risk-type">Quantum Status</span>
-        <span class="risk-badge" style="background:var(--accent-soft);color:var(--accent)">Active</span>
+        <span class="risk-type">System Status</span>
+        <span class="risk-badge" style="background:var(--accent-soft);color:var(--accent)">Online</span>
       </div>
       <div class="quantum-info">
-        <div class="active">▶ ZZFeatureMap Encoding</div>
+        <div class="active">● ZZFeatureMap Active</div>
         <div>VQC: EfficientSU2</div>
-        <div>Backend: <strong>Classical Simulator</strong></div>
+        <div>Backend: <strong>Classical</strong></div>
         <div>Shots: <strong>1024</strong></div>
-        <div style="margin-top:0.5rem;color:var(--accent)">✓ IBM Qiskit Ready</div>
       </div>
     </div>
   </div>
@@ -1015,65 +961,65 @@
       <p class="section-subtitle">Powered by IBM Qiskit</p>
     </div>
     <div class="features-grid reveal">
-      <div class="feature-card" data-tilt>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
           </svg>
         </div>
         <div class="feature-title">ZZFeatureMap Encoding</div>
-        <div class="feature-desc">Second-order Pauli-Z entangling feature map captures complex correlations in environmental data.</div>
-        <div class="feature-tag">Quantum Feature Encoding</div>
+        <div class="feature-desc">Quantum feature encoding for complex environmental patterns.</div>
+        <div class="feature-tag">Quantum Encoding</div>
       </div>
-      <div class="feature-card" data-tilt>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M3 12h4l3-9 4 18 3-9h4"/>
           </svg>
         </div>
-        <div class="feature-title">Variational Quantum Circuits</div>
-        <div class="feature-desc">Hybrid quantum-classical optimization with EfficientSU2 ansatz for disaster pattern learning.</div>
+        <div class="feature-title">Variational Circuits</div>
+        <div class="feature-desc">Hybrid quantum-classical optimization.</div>
         <div class="feature-tag">VQC Architecture</div>
       </div>
-      <div class="feature-card" data-tilt>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
           </svg>
         </div>
         <div class="feature-title">Multi-Hazard Detection</div>
-        <div class="feature-desc">Simultaneous detection across heat waves, cyclones, floods, blizzards, and earthquakes.</div>
-        <div class="feature-tag">5 Disaster Types</div>
+        <div class="feature-desc">5 disaster types: cyclone, heat, flood, quake, blizzard.</div>
+        <div class="feature-tag">5 Categories</div>
       </div>
-      <div class="feature-card" data-tilt>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
           </svg>
         </div>
-        <div class="feature-title">Real-Time Weather Data</div>
-        <div class="feature-desc">OpenWeatherMap API with Jena climate dataset fallback for continuous prediction.</div>
-        <div class="feature-tag">Weather Integration</div>
+        <div class="feature-title">Weather Integration</div>
+        <div class="feature-desc">Real-time data from weather APIs.</div>
+        <div class="feature-tag">Live Data</div>
       </div>
-      <div class="feature-card" data-tilt>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           </svg>
         </div>
-        <div class="feature-title">Instant Notifications</div>
-        <div class="feature-desc">Discord webhook and Gmail SMTP alerts fire instantly on disaster threat detection.</div>
-        <div class="feature-tag">Discord + Email</div>
+        <div class="feature-title">Instant Alerts</div>
+        <div class="feature-desc">Discord & email notifications.</div>
+        <div class="feature-tag">Notifications</div>
       </div>
-      <div class="feature-card" data-tilt>
+      <div class="feature-card">
         <div class="feature-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
           </svg>
         </div>
-        <div class="feature-title">Evacuation Routing</div>
-        <div class="feature-desc">OSRM provides free, unlimited routing with no API key required.</div>
-        <div class="feature-tag">OSRM — No Key Needed</div>
+        <div class="feature-title">Evacuation Routes</div>
+        <div class="feature-desc">Free OSRM routing.</div>
+        <div class="feature-tag">No API Key</div>
       </div>
     </div>
   </div>
@@ -1081,27 +1027,25 @@
 
 <section class="hazard-scroll">
   <div class="section-header reveal">
-    <h2 class="section-title">Hazard <span>Coverage</span></h2>
-    <div class="live-indicator"><span class="live-dot"></span>Quantum ML Detection Matrix</div>
+    <h2 class="section-title">Detection <span>Matrix</span></h2>
+    <div class="live-indicator"><span class="live-dot"></span>Monitoring Active</div>
   </div>
   <div class="hazard-track">
+    <div class="hazard-pill"><div class="hazard-icon">🌀</div><div class="hazard-name">Cyclone</div><div class="hazard-thresh">Wind > 17 m/s</div></div>
     <div class="hazard-pill"><div class="hazard-icon">🌡️</div><div class="hazard-name">Heat Wave</div><div class="hazard-thresh">Temp > 35°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌀</div><div class="hazard-name">Cyclone</div><div class="hazard-thresh">Wind > 15 m/s</div></div>
     <div class="hazard-pill"><div class="hazard-icon">🌊</div><div class="hazard-name">Flood</div><div class="hazard-thresh">Humidity > 90%</div></div>
     <div class="hazard-pill"><div class="hazard-icon">❄️</div><div class="hazard-name">Blizzard</div><div class="hazard-thresh">Temp < -5°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">⚡</div><div class="hazard-name">Earthquake</div><div class="hazard-thresh">Pressure < 970</div></div>
+    <div class="hazard-pill"><div class="hazard-icon">⚡</div><div class="hazard-name">Earthquake</div><div class="hazard-thresh">Pressure < 960</div></div>
+    <div class="hazard-pill"><div class="hazard-icon">🌀</div><div class="hazard-name">Cyclone</div><div class="hazard-thresh">Wind > 17 m/s</div></div>
     <div class="hazard-pill"><div class="hazard-icon">🌡️</div><div class="hazard-name">Heat Wave</div><div class="hazard-thresh">Temp > 35°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌀</div><div class="hazard-name">Cyclone</div><div class="hazard-thresh">Wind > 15 m/s</div></div>
     <div class="hazard-pill"><div class="hazard-icon">🌊</div><div class="hazard-name">Flood</div><div class="hazard-thresh">Humidity > 90%</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">❄️</div><div class="hazard-name">Blizzard</div><div class="hazard-thresh">Temp < -5°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">⚡</div><div class="hazard-name">Earthquake</div><div class="hazard-thresh">Pressure < 970</div></div>
   </div>
 </section>
 
 <section class="api-section" id="api">
   <div class="api-info reveal">
     <h2>Predict with<br><span>Quantum Power</span></h2>
-    <p>POST weather data to <code>/api/predict</code> and receive quantum-enhanced disaster predictions.</p>
+    <p>POST weather data to <code>/api/predict</code> for quantum-enhanced disaster predictions.</p>
     <div class="api-routes">
       <div class="api-route"><span class="route-method post">POST</span> /api/predict</div>
       <div class="api-route"><span class="route-method post">POST</span> /api/route</div>
@@ -1112,38 +1056,38 @@
   <div class="api-code reveal">
     <div class="api-code-header">
       <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-      <div class="code-lang">api/predict · POST</div>
+      <div class="code-lang">/api/predict</div>
     </div>
     <pre><span class="c-cm"># Request</span>
-curl -X POST <span class="c-str">http://localhost:5000/api/predict</span> \
+curl -X POST <span class="c-str">https://qiskit-7xhj.onrender.com/api/predict</span> \
   -H <span class="c-str">"Content-Type: application/json"</span> \
   -d <span class="c-str">'{"city": "Chennai"}'</span>
 
 <span class="c-cm"># Response</span>
 {
-  <span class="c-key">"disaster_type"</span>: <span class="c-str">"cyclone"</span>,
-  <span class="c-key">"risk_percentage"</span>: <span class="c-num">87.3</span>,
-  <span class="c-key">"risk_level"</span>: <span class="c-str">"CRITICAL"</span>,
+  <span class="c-key">"disaster_type"</span>: <span class="c-str">"normal"</span>,
+  <span class="c-key">"risk_percentage"</span>: <span class="c-num">8.2</span>,
+  <span class="c-key">"risk_level"</span>: <span class="c-str">"LOW"</span>,
   <span class="c-key">"quantum_enabled"</span>: <span class="c-num">true</span>
 }</pre>
   </div>
 </section>
 
 <section class="cta-section">
-  <h2 class="cta-title reveal">Quantum ML.<br>Deploy <span>Today.</span></h2>
-  <p class="cta-subtitle reveal">Free APIs. Zero infrastructure cost. One command to deploy. QiskitML is ready when disaster isn't.</p>
+  <h2 class="cta-title reveal">Quantum ML.<br>Deploy <span>Now.</span></h2>
+  <p class="cta-subtitle reveal">Free API. Zero infrastructure. Try it now.</p>
   <div class="hero-actions reveal">
-    <a href="https://github.com/SAICHARAN-TEJ/QISKIT" class="btn-primary">Clone on GitHub</a>
+    <a href="https://github.com/SAICHARAN-TEJ/QISKIT" class="btn-primary">GitHub</a>
     <a href="/dashboard" class="btn-ghost">Launch App →</a>
   </div>
 </section>
 
 <footer>
   <div class="footer-brand">Qiskit<span>ML</span></div>
-  <div class="footer-copy">© 2026 SAICHARAN-TEJ · Quantum ML Disaster Prediction v4.0</div>
+  <div class="footer-copy">© 2026 — Quantum ML Disaster Prediction</div>
   <div class="footer-links">
     <a href="https://github.com/SAICHARAN-TEJ/QISKIT">GitHub</a>
-    <a href="#api">API Docs</a>
+    <a href="#api">API</a>
     <a href="/dashboard">Dashboard</a>
   </div>
 </footer>
@@ -1159,10 +1103,6 @@ const CITIES = {
   "kolkata": { name: "Kolkata", lat: 22.5726, lon: 88.3639 },
   "jaipur": { name: "Jaipur", lat: 26.9124, lon: 75.7873 },
   "kerala": { name: "Kerala", lat: 10.8505, lon: 76.2711 },
-  "rajasthan": { name: "Rajasthan", lat: 27.0238, lon: 74.2179 },
-  "gujarat": { name: "Gujarat", lat: 22.2587, lon: 71.1924 },
-  "himachal": { name: "Himachal Pradesh", lat: 31.1048, lon: 77.1734 },
-  "tamil nadu": { name: "Tamil Nadu", lat: 11.1271, lon: 78.6569 },
   "london": { name: "London", lat: 51.5074, lon: -0.1278 },
   "new york": { name: "New York", lat: 40.7128, lon: -74.006 },
   "tokyo": { name: "Tokyo", lat: 35.6762, lon: 139.6503 },
@@ -1184,23 +1124,20 @@ const launchBtn = document.getElementById('launchBtn');
 
 searchInput.addEventListener('input', (e) => {
   const query = e.target.value.toLowerCase().trim();
-  if (query.length < 1) {
-    searchResults.classList.remove('active');
-    return;
-  }
-
+  if (query.length < 1) { searchResults.classList.remove('active'); return; }
+  
   const matches = Object.entries(CITIES)
     .filter(([key, val]) => val.name.toLowerCase().includes(query) || key.includes(query))
-    .slice(0, 6);
+    .slice(0, 5);
 
   if (matches.length > 0) {
     searchResults.innerHTML = matches.map(([key, val]) => `
       <div class="search-result-item" data-city="${val.name}" data-lat="${val.lat}" data-lon="${val.lon}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
         </svg>
         <span class="search-result-name">${val.name}</span>
-        <span class="search-result-coords">${val.lat.toFixed(2)}°, ${val.lon.toFixed(2)}°</span>
+        <span class="search-result-coords">${val.lat.toFixed(1)}°, ${val.lon.toFixed(1)}°</span>
       </div>
     `).join('');
     searchResults.classList.add('active');
@@ -1215,7 +1152,6 @@ searchResults.addEventListener('click', (e) => {
     const city = item.dataset.city;
     const lat = item.dataset.lat;
     const lon = item.dataset.lon;
-    
     searchInput.value = city;
     searchResults.classList.remove('active');
     launchBtn.href = `/dashboard?city=${encodeURIComponent(city)}&lat=${lat}&lon=${lon}`;
@@ -1229,7 +1165,6 @@ function launchWithCity() {
     const cityData = CITIES[lowerCity] || Object.values(CITIES).find(c => 
       c.name.toLowerCase().includes(lowerCity) || lowerCity.includes(c.name.toLowerCase())
     );
-    
     if (cityData) {
       window.location.href = `/dashboard?city=${encodeURIComponent(cityData.name)}&lat=${cityData.lat}&lon=${cityData.lon}`;
     } else {
@@ -1241,24 +1176,21 @@ function launchWithCity() {
 }
 
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.search-wrapper')) {
-    searchResults.classList.remove('active');
-  }
+  if (!e.target.closest('.search-wrapper')) searchResults.classList.remove('active');
 });
 
-/* 3D Scene - Three.js */
+/* Three.js Scene */
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 40;
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 45;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 container.appendChild(renderer.domElement);
 
-/* Quantum Particles */
-const particleCount = 2000;
+const particleCount = 1500;
 const geometry = new THREE.BufferGeometry();
 const positions = new Float32Array(particleCount * 3);
 const colors = new Float32Array(particleCount * 3);
@@ -1267,18 +1199,18 @@ const sizes = new Float32Array(particleCount);
 for (let i = 0; i < particleCount; i++) {
   const phi = Math.acos(2 * Math.random() - 1);
   const theta = Math.random() * Math.PI * 2;
-  const r = 20 + Math.random() * 15;
+  const r = 18 + Math.random() * 14;
   
   positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
   positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
   positions[i * 3 + 2] = r * Math.cos(phi);
   
-  const isAccent = Math.random() < 0.05;
-  colors[i * 3] = isAccent ? 0.0 : 0.1 + Math.random() * 0.15;
-  colors[i * 3 + 1] = isAccent ? 0.83 : 0.3 + Math.random() * 0.2;
-  colors[i * 3 + 2] = isAccent ? 0.67 : 0.5 + Math.random() * 0.2;
+  const isAccent = Math.random() < 0.04;
+  colors[i * 3] = isAccent ? 0.13 : 0.08 + Math.random() * 0.1;
+  colors[i * 3 + 1] = isAccent ? 0.83 : 0.25 + Math.random() * 0.15;
+  colors[i * 3 + 2] = isAccent ? 0.93 : 0.45 + Math.random() * 0.15;
   
-  sizes[i] = isAccent ? 0.5 : 0.15 + Math.random() * 0.2;
+  sizes[i] = isAccent ? 0.4 : 0.1 + Math.random() * 0.15;
 }
 
 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -1296,12 +1228,12 @@ const material = new THREE.ShaderMaterial({
     void main() {
       vColor = color;
       vec3 pos = position;
-      float wave = sin(uTime * 0.3 + position.x * 0.05 + position.y * 0.04) * 1.2;
+      float wave = sin(uTime * 0.25 + position.x * 0.04 + position.y * 0.03) * 0.8;
       pos.y += wave;
       vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = size * (250.0 / -mvPosition.z);
+      gl_PointSize = size * (200.0 / -mvPosition.z);
       gl_Position = projectionMatrix * mvPosition;
-      vAlpha = 0.4 + 0.6 * sin(uTime * 0.4 + position.z * 0.08);
+      vAlpha = 0.35 + 0.5 * sin(uTime * 0.35 + position.z * 0.06);
     }
   `,
   fragmentShader: `
@@ -1310,7 +1242,7 @@ const material = new THREE.ShaderMaterial({
     void main() {
       float dist = length(gl_PointCoord - vec2(0.5));
       if (dist > 0.5) discard;
-      float alpha = smoothstep(0.5, 0.05, dist) * vAlpha * 0.7;
+      float alpha = smoothstep(0.5, 0.05, dist) * vAlpha * 0.6;
       gl_FragColor = vec4(vColor, alpha);
     }
   `,
@@ -1321,43 +1253,6 @@ const material = new THREE.ShaderMaterial({
 
 const particles = new THREE.Points(geometry, material);
 scene.add(particles);
-
-/* Quantum Entanglement Lines */
-const lineGeometry = new THREE.BufferGeometry();
-const linePositions = [];
-for (let i = 0; i < 60; i++) {
-  const idx1 = Math.floor(Math.random() * particleCount);
-  const idx2 = Math.floor(Math.random() * particleCount);
-  linePositions.push(
-    positions[idx1 * 3], positions[idx1 * 3 + 1], positions[idx1 * 3 + 2],
-    positions[idx2 * 3], positions[idx2 * 3 + 1], positions[idx2 * 3 + 2]
-  );
-}
-lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-const lineMaterial = new THREE.LineBasicMaterial({ 
-  color: 0x00d4aa, 
-  transparent: true, 
-  opacity: 0.1 
-});
-const lines = new THREE.LineSegments(lineGeometry, lineMaterial);
-scene.add(lines);
-
-/* Floating Quantum Gates */
-const gateGroup = new THREE.Group();
-const gateGeometry = new THREE.TorusGeometry(0.6, 0.1, 8, 32);
-const gateMaterial = new THREE.MeshBasicMaterial({ color: 0x00d4aa, transparent: true, opacity: 0.25 });
-
-for (let i = 0; i < 6; i++) {
-  const gate = new THREE.Mesh(gateGeometry, gateMaterial);
-  gate.position.set(
-    (Math.random() - 0.5) * 30,
-    (Math.random() - 0.5) * 25,
-    (Math.random() - 0.5) * 15
-  );
-  gate.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-  gateGroup.add(gate);
-}
-scene.add(gateGroup);
 
 let mouseX = 0, mouseY = 0;
 document.addEventListener('mousemove', (e) => {
@@ -1375,94 +1270,66 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const time = clock.getElapsedTime();
-  
   material.uniforms.uTime.value = time;
-  particles.rotation.y = time * 0.03 + mouseX * 0.2;
-  particles.rotation.x = mouseY * 0.1;
-  
-  gateGroup.rotation.y = time * 0.08;
-  gateGroup.rotation.z = time * 0.05;
-  gateGroup.children.forEach((gate, i) => {
-    gate.rotation.x = time * 0.25 + i * 0.5;
-    gate.rotation.y = time * 0.3;
-  });
-  
+  particles.rotation.y = time * 0.025 + mouseX * 0.15;
+  particles.rotation.x = mouseY * 0.08;
   renderer.render(scene, camera);
 }
 animate();
 
-/* Vanilla Tilt 3D Effect */
-document.querySelectorAll('[data-tilt]').forEach(el => {
-  VanillaTilt.init(el, {
-    max: 8,
-    speed: 400,
-    glare: true,
-    "max-glare": 0.15,
-  });
-});
-
 /* GSAP Animations */
 gsap.registerPlugin(ScrollTrigger);
 
-gsap.to('.hero-badge', { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', delay: 0.2 });
-gsap.to('.hero-title', { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: 0.3 });
-gsap.to('.hero-desc', { opacity: 1, duration: 0.7, ease: 'power2.out', delay: 0.5 });
-gsap.to('.search-wrapper', { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.6 });
-gsap.to('.hero-actions', { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.7 });
+gsap.to('.hero-badge', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.15 });
+gsap.to('.hero-title', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.25 });
+gsap.to('.hero-desc', { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.4 });
+gsap.to('.search-wrapper', { opacity: 1, duration: 0.5, ease: 'power2.out', delay: 0.5 });
+gsap.to('.hero-actions', { opacity: 1, duration: 0.5, ease: 'power2.out', delay: 0.6 });
 
 ScrollTrigger.create({
-  start: 'top -60',
-  onUpdate: (self) => {
-    document.getElementById('nav').classList.toggle('scrolled', self.progress > 0);
-  }
+  start: 'top -50',
+  onUpdate: (self) => document.getElementById('nav').classList.toggle('scrolled', self.progress > 0)
 });
 
 gsap.utils.toArray('.reveal').forEach((el) => {
   gsap.to(el, {
-    scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' },
-    opacity: 1, y: 0, duration: 0.8, ease: 'power3.out'
+    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
+    opacity: 1, y: 0, duration: 0.7, ease: 'power3.out'
   });
 });
 
 ScrollTrigger.create({
-  trigger: '.risk-grid',
-  start: 'top 80%',
-  onEnter: () => {
-    document.querySelectorAll('.risk-bar-fill').forEach(bar => {
-      bar.style.width = bar.dataset.width + '%';
-    });
-  }
+  trigger: '.risk-grid', start: 'top 80%',
+  onEnter: () => document.querySelectorAll('.risk-bar-fill').forEach(bar => bar.style.width = bar.dataset.width + '%')
 });
 
-/* Counter Animation */
 function animateCounters() {
   document.querySelectorAll('.counter').forEach(el => {
     const target = parseFloat(el.dataset.target);
     const isFloat = target % 1 !== 0;
     let start = 0;
-    const step = target / 50;
+    const step = target / 45;
     const timer = setInterval(() => {
       start += step;
       if (start >= target) { start = target; clearInterval(timer); }
       el.textContent = isFloat ? start.toFixed(1) : Math.floor(start);
-    }, 25);
+    }, 28);
   });
 }
 ScrollTrigger.create({ trigger: '.stats-section', start: 'top 80%', onEnter: animateCounters });
 
-/* Risk Fluctuation */
 function fluctuateRisks() {
-  const ids = ['risk-cyclone', 'risk-heat', 'risk-flood', 'risk-blizzard', 'risk-eq'];
-  const bases = [87, 78, 71, 54, 32];
+  const ids = ['risk-cyclone', 'risk-heat', 'risk-flood', 'risk-eq'];
+  const bases = [12, 28, 8, 3];
   ids.forEach((id, i) => {
     const el = document.getElementById(id);
     if (el) {
-      const v = bases[i] + Math.floor((Math.random() - 0.5) * 6);
+      const v = Math.max(1, bases[i] + Math.floor((Math.random() - 0.5) * 8));
       el.innerHTML = v + '<span class="percent">%</span>';
     }
   });
 }
-setInterval(fluctuateRisks, 5000);
+setInterval(fluctuateRisks, 4000);
 </script>
 </body>
 </html>
