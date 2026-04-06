@@ -2,10 +2,10 @@
 
 Real-time disaster prediction and evacuation routing powered by quantum-inspired algorithms
 
-[Live Demo](https://qiskit-7xhj.onrender.com)
-[GitHub Repository](https://github.com/SAICHARAN-TEJ/QISKIT)
-[Python](https://www.python.org/)
-[Qiskit](https://qiskit.org/)
+Live Demo: https://qiskit-7xhj.onrender.com
+GitHub Repository: https://github.com/SAICHARAN-TEJ/QISKIT
+Python: https://www.python.org/
+Qiskit: https://qiskit.org/
 
 ## Quick Start
 
@@ -147,7 +147,6 @@ MIT License - see LICENSE for details
 - Quantum Framework: IBM Qiskit and PennyLane
 - Mapping: Leaflet.js and OpenStreetMap contributors
 - UI Inspiration: Modern quantum computing visualization techniques
-
 
 ---
 
