@@ -3,9 +3,6 @@
 Real-time disaster prediction and evacuation routing powered by quantum-inspired algorithms
 
 Live Demo: https://qiskit-7xhj.onrender.com
-GitHub Repository: https://github.com/SAICHARAN-TEJ/QISKIT
-Python: https://www.python.org/
-Qiskit: https://qiskit.org/
 
 ## Quick Start
 
