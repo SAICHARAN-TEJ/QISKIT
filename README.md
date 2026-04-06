@@ -73,11 +73,6 @@ Location Input
 
 ## Technical Highlights
 
-### APIs Integrated (Securely)
-- OpenWeatherMap: Real temperature, pressure, humidity, wind data
-- OpenRouteService: Actual driving routes following road networks
-- Keys stored as environment variables - never in code
-
 ### Quantum-Inspired Elements
 - Variational Circuits: For complex pattern recognition in weather data
 - Optimization Landscapes: Finding optimal evacuation directions
@@ -166,12 +161,6 @@ MIT License - see LICENSE for details
 - Mapping: Leaflet.js and OpenStreetMap contributors
 - UI Inspiration: Modern quantum computing visualization techniques
 
-## Support
-
-Having issues or questions?
-- Check the GitHub Issues
-- Email: saicharantej@example.com
-- For emergencies, always follow local official guidance
 
 ---
 
