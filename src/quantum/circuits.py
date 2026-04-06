@@ -112,13 +112,12 @@ class VariationalQuantumClassifier:
             
     def _initialize_parameters(self, seed: Optional[int] = None) -> np.ndarray:
         """Initialize parameters with random values."""
-        if seed is not None:
-            np.random.seed(seed)
+        rng = np.random.default_rng(seed)
             
         if self.config.measurement_type == MeasurementType.PARITY:
-            return np.random.uniform(0, 2 * np.pi, self._num_parameters)
+            return rng.uniform(0, 2 * np.pi, self._num_parameters)
         else:
-            return np.random.uniform(-np.pi, np.pi, self._num_parameters)
+            return rng.uniform(-np.pi, np.pi, self._num_parameters)
             
     def build_circuit(self, data: np.ndarray, build_ansatz: bool = True) -> dict:
         """
@@ -439,9 +438,8 @@ class QuantumNeuralNetwork:
         
     def _initialize_weights(self, seed: Optional[int] = None) -> np.ndarray:
         """Initialize network weights."""
-        if seed is not None:
-            np.random.seed(seed)
-        return np.random.randn(self.num_layers, self.num_qubits) * 0.1
+        rng = np.random.default_rng(seed)
+        return rng.standard_normal((self.num_layers, self.num_qubits)) * 0.1
         
     def forward(self, data: np.ndarray) -> np.ndarray:
         """

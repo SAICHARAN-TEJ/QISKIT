@@ -1,244 +1,178 @@
-# QiskitML - Quantum Machine Learning Disaster Prediction System
+# QuantumRes: Disaster Response AI
 
-![Quantum ML](https://img.shields.io/badge/Quantum-ML-00d4ff?style=for-the-badge)
-![Qiskit](https://img.shields.io/badge/Powered_by-Qiskit-6929c8?style=for-the-badge)
-![Python](https://img.shields.io/badge/Python-3.11+-3776ab?style=for-the-badge)
+Real-time disaster prediction and evacuation routing powered by quantum-inspired algorithms
 
-## 🔗 Live Demo
+[Live Demo](https://qiskit-7xhj.onrender.com)
+[GitHub Repository](https://github.com/SAICHARAN-TEJ/QISKIT)
+[Python](https://www.python.org/)
+[Qiskit](https://qiskit.org/)
 
-**🌐 https://qiskit-7xhj.onrender.com**
+## Quick Start
 
-Real-time disaster prediction using **Quantum Machine Learning** powered by **IBM Qiskit**. This project leverages variational quantum circuits, quantum feature maps, and quantum kernel methods for enhanced disaster classification.
+See QuantumRes in action: [Live Demo](https://qiskit-7xhj.onrender.com)
 
-## Quantum Technology Stack
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Feature Encoding** | ZZFeatureMap | Quantum encoding of environmental features |
-| **Classification** | Variational Quantum Circuit (VQC) | Hybrid quantum-classical learning |
-| **Kernels** | Quantum Kernel Estimation | High-dimensional Hilbert space similarity |
-| **Backend** | Qiskit Aer / IBM Quantum | Circuit execution |
-| **Classical ML** | Scikit-learn | Pre/Post processing |
-
-## Features
-
-- **Quantum Feature Maps**: ZZFeatureMap for encoding environmental data (temperature, pressure, humidity, wind)
-- **Variational Quantum Classifier**: Parameterized quantum circuits for disaster type classification
-- **Quantum Metrics**: Entropy, purity, and quantum advantage scoring
-- **Multi-Disaster Detection**: Heat Waves, Cyclones, Floods, Blizzards, Earthquakes
-- **Real-time Alerts**: Discord webhooks + Email notifications
-- **Free Routing**: OSRM for evacuation planning
-- **Modern Web Interface**: Quantum-themed dashboard
-
-## Architecture
-
+Run locally:
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    QUANTUM ML PIPELINE                          │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐    ┌──────────────────┐    ┌───────────────┐  │
-│  │   Sensor    │───▶│ Feature Engineering│───▶│  ZZFeatureMap │  │
-│  │   Data      │    │    + Preprocessing│    │   Encoding    │  │
-│  └─────────────┘    └──────────────────┘    └───────┬───────┘  │
-│                                                        │         │
-│                                                        ▼         │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              VARIATIONAL QUANTUM CIRCUIT                     ││
-│  │  ┌─────┐   ┌─────┐   ┌─────┐   ┌─────┐                   ││
-│  │  │  H  │──▶│ RY  │──▶│ CNOT│──▶│ RY  │──▶ Measurement   ││
-│  │  └─────┘   └─────┘   └─────┘   └─────┘                   ││
-│  │    Q0────────Q1────────Q2────────Q3                       ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                           │                                     │
-│                           ▼                                     │
-│  ┌─────────────┐    ┌──────────────┐    ┌─────────────────┐    │
-│  │  Classical  │◀───│   Quantum    │───▶│    Disaster     │    │
-│  │ Post-Process│    │    Metrics    │    │   Prediction    │    │
-│  └─────────────┘    └──────────────┘    └─────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## Installation
-
-```bash
 # Clone the repository
 git clone https://github.com/SAICHARAN-TEJ/QISKIT.git
 cd QISKIT
 
-# Create virtual environment
-python -m venv qenv
-source qenv/bin/activate  # On Windows: qenv\Scripts\activate
-
-# Install quantum ML dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Install Qiskit (if not in requirements)
-pip install qiskit qiskit-algorithms qiskit-machine-learning qiskit-aer
+# Start the application
+python webapp/app.py
+
+# Open in browser: http://localhost:5000
 ```
 
-## Configuration
+## What QuantumRes Does
 
-```bash
-# Weather API (optional - uses Jena dataset by default)
-set OPENWEATHERMAP_API_KEY=your_key
+QuantumRes helps communities prepare for and respond to natural disasters by:
 
-# Discord alerts (optional)
-set DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+1. Detects your location (with permission) or lets you specify any city worldwide
+2. Analyzes current conditions using real weather data and quantum-inspired ML models
+3. Predicts disaster types (heat waves, cyclones, floods, blizzards, earthquakes) with risk levels
+4. Calculates optimal evacuation routes using quantum-inspired optimization and real road data
+5. Visualizes everything on interactive maps showing your position, danger zones, and safe paths
 
-# Email alerts (optional)
-set SENDER_EMAIL=your_email@gmail.com
-set SENDER_PASSWORD=your_app_password
+## How It Works
 
-# Quantum ML settings
-set QUANTUM_ENABLED=true
-set QUANTUM_BACKEND=classical  # or 'aer', 'ibm'
-set QUANTUM_SHOTS=1024
-```
+### Data Flow
+Location Input 
+    ↓
+[Weather API] → Real-time atmospheric data 
+    ↓
+[Quantum ML Model] → Disaster type + risk percentage 
+    ↓
+[Route Optimizer] → 4 evacuation options ranked by safety 
+    ↓
+[Interactive Map] → Your location, threat zone, and escape routes
 
-## Running the Application
+### Core Technologies
+- Real Weather Data: OpenWeatherMap API for current conditions
+- Smart Routing: OpenRouteService for actual road networks
+- Quantum-Inspired ML: Variational circuits for pattern recognition
+- Interactive Maps: Leaflet.js with custom visualizations
+- Responsive Design: Works on mobile, tablet, and desktop
 
-### Web Application
+## Features
 
-```bash
-cd webapp
-python app.py
-```
+### For Residents & Communities
+- Precise Location Detection: Browser geolocation or city search
+- Early Warning System: Color-coded risk levels (LOW to CRITICAL)
+- Evacuation Planning: Multiple route options with safety scores
+- Live Map Display: See exactly where danger is and where to go
+- Mobile Friendly: Works on any device with a browser
 
-Visit `http://localhost:5000`
+### For Emergency Planners
+- Multi-Disaster Coverage: 5 major disaster types modeled
+- Risk Quantification: Numerical scores for resource allocation
+- Route Analysis: Comparative safety scoring of alternatives
+- Simulation Mode: Test scenarios for preparedness drills
 
-### CLI System
+## Technical Highlights
 
-```bash
-python src/disaster_system.py
-```
+### APIs Integrated (Securely)
+- OpenWeatherMap: Real temperature, pressure, humidity, wind data
+- OpenRouteService: Actual driving routes following road networks
+- Keys stored as environment variables - never in code
 
-### With Quantum Backend
+### Quantum-Inspired Elements
+- Variational Circuits: For complex pattern recognition in weather data
+- Optimization Landscapes: Finding optimal evacuation directions
+- Hybrid Approach: Quantum feature mapping + classical decision making
 
-```bash
-# Set quantum backend
-set QUANTUM_ENABLED=true
-set QUANTUM_BACKEND=aer
-
-# Run
-python src/disaster_system.py
-```
-
-## Quantum ML Components
-
-### Feature Maps (`src/quantum/feature_maps.py`)
-
-- `ZZFeatureMap`: Second-order Pauli-Z entangling feature map
-- `PauliFeatureMap`: General Pauli-based encoding
-- `EfficientSU2Map`: Hardware-efficient ansatz
-
-### Circuits (`src/quantum/circuits.py`)
-
-- `VariationalQuantumClassifier`: Main VQC implementation
-- `QuantumNeuralNetwork`: Quantum feature transformation
-- `QuantumKernelCircuit`: Kernel matrix computation
-
-### Classifiers (`src/quantum/classifiers.py`)
-
-- `HybridQuantumClassicalClassifier`: Full hybrid pipeline
-- `QuantumEnsemble`: Ensemble of quantum classifiers
-- `QuantumSVM`: Quantum-enhanced SVM
-
-### Utilities (`src/quantum/utils.py`)
-
-- `QuantumBackend`: Backend selection and execution
-- `CircuitVisualizer`: Circuit diagram generation
-- `QuantumMetrics`: Entropy, purity, advantage scoring
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Landing page |
-| `/dashboard` | GET | Quantum ML dashboard |
-| `/api/predict` | POST | Quantum ML disaster prediction |
-| `/api/route` | POST | Evacuation routing |
-| `/api/status` | GET | System status |
-| `/api/quantum-info` | GET | Quantum backend info |
-
-## Quantum Metrics
-
-The system computes and displays:
-
-- **Entropy**: Von Neumann entanglement entropy
-- **Purity**: State purity (1 = pure, 0.5 = maximally mixed)
-- **Advantage Score**: Estimated quantum advantage potential
-- **Circuit Complexity**: Gate count and depth
+### Performance
+- Sub-second predictions: From location to actionable intel
+- Low bandwidth: Efficient API usage with caching
+- Graceful degradation: Works fully even if external APIs unavailable
 
 ## Project Structure
 
 ```
 QISKIT/
-├── src/
-│   ├── disaster_system.py       # Main CLI system with quantum ML
-│   ├── quantum/
-│   │   ├── __init__.py
-│   │   ├── feature_maps.py     # ZZFeatureMap, Pauli, EfficientSU2
-│   │   ├── circuits.py         # VQC, QNN, Quantum Kernel
-│   │   ├── classifiers.py      # Hybrid classifiers, Ensemble, SVM
-│   │   └── utils.py           # Backend, Metrics, Visualization
-│   ├── ml/
-│   │   ├── __init__.py
-│   │   └── preprocessing.py    # Feature engineering, preprocessing
-│   └── data/
-│       └── jena_climate_2009_2016.csv
 ├── webapp/
-│   ├── app.py                 # Flask app with quantum endpoints
-│   ├── templates/
-│   │   ├── index.html         # Landing page
-│   │   └── dashboard.html     # Quantum ML dashboard
-│   ├── static/
-│   │   ├── css/              # Quantum-themed styling
-│   │   └── js/               # Dashboard JavaScript
-│   └── qiskitml.db
-├── README.md
-├── requirements.txt
-├── Procfile
-└── runtime.txt
+│   ├── app.py              # Main Flask application
+│   ├── templates/          # HTML pages (dashboard + landing)
+│   └── static/             # CSS, JS, and assets
+├── src/
+│   ├── ml/                 # Machine learning components
+│   └── quantum/            # Quantum-inspired algorithms
+├── requirements.txt        # Python dependencies
+├── Procfile                # For Render deployment
+└── runtime.txt             # Python version specification
 ```
 
-## Disaster Detection
+## Deployment Ready
 
-| Disaster | Conditions | Risk Range |
-|----------|-----------|-------------|
-| Heat Wave | Temp > 35°C, Humidity > 60% | 70-95% |
-| Cyclone | Wind > 15 m/s, P < 980 | 75-98% |
-| Flood | Humidity > 90%, Temp > 5°C | 65-90% |
-| Blizzard | Temp < -5°C, Wind > 8 m/s | 70-88% |
-| Earthquake | Pressure < 970 mbar | 80% |
+### Deploy to Render (Free Tier)
+1. Fork this repository
+2. Create new Web Service on Render
+3. Connect your forked repo
+4. Add environment variables:
+   - OPENWEATHERMAP_API_KEY: Your free key from https://openweathermap.org/api
+   - ORS_API_KEY: Your free key from https://openrouteservice.org/dev/#/signup
+5. Click "Create Web Service" - deployment automatic!
 
-## Risk Levels
+### Environment Variables
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| OPENWEATHERMAP_API_KEY | Real weather data | 188d34eaa019703a9be675707e8ba48d |
+| ORS_API_KEY | Real road routing | eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjkxMDQxMDdlNTE3MzQwNDk5MzU1ZTJlZDkxZmU5MjBkIiwiaCI6Im11cm11cjY0In0= |
+| PORT | Auto-set by Render | 10000 |
 
-- **CRITICAL (>=85%)**: Immediate evacuation required
-- **HIGH (>=70%)**: Evacuate immediately
-- **MEDIUM (>=50%)**: Prepare for evacuation
-- **LOW (<50%)**: No action needed
+## Use Cases
 
-## Technologies
+### Individual Preparedness
+- Check risk for your current location before traveling
+- Plan evacuation routes for hurricane season
+- Understand local flood risks during heavy rains
 
-- **Quantum Computing**: IBM Qiskit, Qiskit Aer, Qiskit Machine Learning
-- **Machine Learning**: NumPy, Pandas, Scikit-learn
-- **Web Framework**: Flask, Flask-Limiter
-- **Visualization**: Leaflet.js, GSAP
-- **Styling**: Custom CSS with quantum theme
+### Community Planning
+- Pre-position resources based on predicted risk levels
+- Design better evacuation routes using historical data
+- Conduct drills with simulated disaster scenarios
+
+### Education & Awareness
+- Visualize how different weather conditions create risks
+- Understand evacuation timing and route selection
+- Learn about quantum computing applications in humanitarian work
 
 ## Contributing
 
+We welcome improvements! Please:
 1. Fork the repository
-2. Create a feature branch
-3. Add quantum ML improvements
+2. Create a feature branch (git checkout -b feature/amazing-idea)
+3. Make your changes
 4. Submit a pull request
+
+### Areas for Contribution
+- Additional disaster types (wildfires, tsunamis, etc.)
+- Enhanced routing algorithms (public transit, walking paths)
+- Improved visualization layers (shelters, hospitals, etc.)
+- Multi-language support
+- Performance optimizations
 
 ## License
 
-MIT License
+MIT License - see LICENSE for details
 
-## References
+## Acknowledgments
 
-- [Qiskit Documentation](https://qiskit.org/documentation/)
-- [Quantum Machine Learning](https://qiskit.org/documentation/machine-learning/)
-- [Havlicek et al. - Supervised learning with quantum enhanced feature spaces](https://arxiv.org/abs/1804.11326)
+- Weather Data: OpenWeatherMap API
+- Routing Engine: OpenRouteService API
+- Quantum Framework: IBM Qiskit and PennyLane
+- Mapping: Leaflet.js and OpenStreetMap contributors
+- UI Inspiration: Modern quantum computing visualization techniques
+
+## Support
+
+Having issues or questions?
+- Check the GitHub Issues
+- Email: saicharantej@example.com
+- For emergencies, always follow local official guidance
+
+---
+
+QuantumRes bridges cutting-edge quantum computing research with practical disaster response tools. Built with care for communities worldwide.

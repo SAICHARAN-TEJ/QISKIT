@@ -322,7 +322,7 @@ class CustomFeatureMap(QuantumFeatureMap):
                 idx = (rep * self.num_qubits + i) % len(data_encoded)
                 layer['rotation_layer'].append({
                     'qubit': i,
-                    'gates': [{g: float(data_encoded[idx] * np.random.rand())} 
+                    'gates': [{g: float(data_encoded[idx] * 0.5)} 
                              for g in self.rotation_gates]
                 })
                 

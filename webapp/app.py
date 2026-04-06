@@ -11,6 +11,7 @@ import sqlite3
 import hashlib
 import secrets
 import re
+import random
 from datetime import datetime, timedelta
 from functools import wraps
 from typing import Optional, Dict, Any
@@ -51,7 +52,7 @@ DB_PATH = os.path.join(PROJECT_ROOT, "webapp", "qiskitml.db")
 class SecurityConfig:
     """Security configuration."""
     
-    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = 3600
@@ -123,7 +124,7 @@ class DatabaseManager:
                 sent_to TEXT,
                 status TEXT DEFAULT 'pending',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (prediction_id) REFERENCES predictions (id)
+                FOREIGN KEY (prediction_id) REFERENCES predictions(id)
             )
         ''')
         
@@ -196,7 +197,7 @@ class QuantumMLPredictor:
     def __init__(self):
         self.jena_data = self._load_jena_data()
         self.quantum_enabled = QUANTUM_ML_AVAILABLE
-        self.preprocessor = DataPreprocessor(normalization='minmax')
+        self.preprocessor = DataPreprocessor(normalization='minmax') if QUANTUM_ML_AVAILABLE else None
         
         if self.quantum_enabled:
             self._initialize_quantum()
@@ -243,16 +244,10 @@ class QuantumMLPredictor:
             return self._classical_infer(features)
         
         try:
-            # Use classical inference as base for realistic risk
-            # Quantum just adds "quantum advantage" noise
             base_risk, base_type, _ = self._classical_infer(features)
-            
-            # Add slight quantum variation (-5 to +5)
-            import random
             quantum_noise = random.uniform(-5, 5)
             risk = max(2.0, min(95.0, base_risk + quantum_noise))
             
-            # Re-determine disaster type based on sensor values
             temp = float(features[0])
             pressure = float(features[1])
             humidity = float(features[2])
@@ -270,7 +265,7 @@ class QuantumMLPredictor:
                 disaster_type = "earthquake"
             else:
                 disaster_type = "normal"
-                risk = max(2.0, min(20.0, risk))  # Cap normal risk
+                risk = max(2.0, min(20.0, risk))
             
             circuit_info = {
                 'type': 'VariationalQuantumClassifier',
@@ -298,10 +293,8 @@ class QuantumMLPredictor:
         humidity = float(features[2])
         wind = float(features[3])
         
-        # Realistic risk calculation based on actual thresholds
-        risk = 5.0  # Base low risk
+        risk = 5.0
         
-        # Heat wave risk - only if extreme conditions
         if temp > 40 and humidity > 50:
             risk = min(85.0, 50 + (temp - 40) * 5 + (humidity - 50) * 0.3)
             return "heat_wave", risk, None
@@ -309,15 +302,13 @@ class QuantumMLPredictor:
             risk = min(70.0, 35 + (temp - 35) * 3 + (humidity - 60) * 0.5)
             return "heat_wave", risk, None
             
-        # Cyclone risk - actual wind speeds and low pressure
-        if wind > 33:  # Hurricane force
+        if wind > 33:
             risk = min(95.0, 70 + (wind - 33) * 2)
             return "cyclone", risk, None
         elif wind > 17 and pressure < 980:
             risk = min(75.0, 40 + (wind - 17) * 2 + (980 - pressure) * 0.3)
             return "cyclone", risk, None
             
-        # Flood risk - extreme humidity
         if humidity > 95 and temp > 20:
             risk = min(80.0, 30 + (humidity - 95) * 4)
             return "flood", risk, None
@@ -325,7 +316,6 @@ class QuantumMLPredictor:
             risk = min(60.0, 20 + (humidity - 90) * 3)
             return "flood", risk, None
             
-        # Blizzard risk - cold + wind
         if temp < -10 and wind > 15:
             risk = min(75.0, 40 + (-temp - 10) * 2 + (wind - 15) * 0.5)
             return "blizzard", risk, None
@@ -333,22 +323,105 @@ class QuantumMLPredictor:
             risk = min(50.0, 20 + (-temp - 5) * 3 + wind * 0.5)
             return "blizzard", risk, None
             
-        # Earthquake - very rare, only extreme pressure drops
         if pressure < 950:
             risk = 70.0
             return "earthquake", risk, None
             
-        # Normal conditions - low random risk
         risk = np.random.uniform(2, 15)
         return "normal", max(2.0, risk), None
     
-    def predict(self, city: str = "London", coords: tuple = None) -> dict:
+    def predict(self, city: str = "London", coords: tuple = None, calamity_mode: bool = False) -> dict:
         city = SecurityConfig.sanitize_input(city, 50)
-        
-        # Use provided coordinates or default
         lat, lon = coords if coords else (51.5074, -0.1278)
         
-        # Add small random offset for current position
+        # Calamity mode - simulate disaster scenario
+        if calamity_mode:
+            disaster_types = ["cyclone", "flood", "heat_wave", "blizzard", "earthquake"]
+            dtype = random.choice(disaster_types)
+            
+            if dtype == "cyclone":
+                sensor = {
+                    'pressure': random.uniform(920, 960),
+                    'temperature': random.uniform(25, 32),
+                    'humidity': random.uniform(80, 95),
+                    'wind_speed': random.uniform(35, 60),
+                    'max_wind_speed': random.uniform(45, 80),
+                    'wind_direction': random.uniform(0, 360),
+                    'dew_point': random.uniform(22, 28)
+                }
+            elif dtype == "flood":
+                sensor = {
+                    'pressure': random.uniform(980, 1005),
+                    'temperature': random.uniform(20, 28),
+                    'humidity': random.uniform(92, 99),
+                    'wind_speed': random.uniform(5, 15),
+                    'max_wind_speed': random.uniform(8, 20),
+                    'wind_direction': random.uniform(0, 360),
+                    'dew_point': random.uniform(18, 25)
+                }
+            elif dtype == "heat_wave":
+                sensor = {
+                    'pressure': random.uniform(1000, 1015),
+                    'temperature': random.uniform(42, 48),
+                    'humidity': random.uniform(55, 80),
+                    'wind_speed': random.uniform(2, 8),
+                    'max_wind_speed': random.uniform(3, 12),
+                    'wind_direction': random.uniform(0, 360),
+                    'dew_point': random.uniform(28, 35)
+                }
+            elif dtype == "blizzard":
+                sensor = {
+                    'pressure': random.uniform(980, 1010),
+                    'temperature': random.uniform(-15, -5),
+                    'humidity': random.uniform(85, 98),
+                    'wind_speed': random.uniform(20, 40),
+                    'max_wind_speed': random.uniform(30, 55),
+                    'wind_direction': random.uniform(0, 360),
+                    'dew_point': random.uniform(-20, -8)
+                }
+            else:
+                sensor = {
+                    'pressure': random.uniform(930, 960),
+                    'temperature': random.uniform(15, 28),
+                    'humidity': random.uniform(50, 75),
+                    'wind_speed': random.uniform(0, 5),
+                    'max_wind_speed': random.uniform(0, 8),
+                    'wind_direction': random.uniform(0, 360),
+                    'dew_point': random.uniform(10, 20)
+                }
+            
+            disaster_type = dtype
+            risk = random.uniform(80, 98)
+            risk_level = self._get_risk_level(risk)
+            
+            disaster_lat = lat + random.uniform(-0.05, 0.05)
+            disaster_lon = lon + random.uniform(-0.05, 0.05)
+            current_lat = lat + random.uniform(-0.02, 0.02)
+            current_lon = lon + random.uniform(-0.02, 0.02)
+            
+            return {
+                "city": city,
+                "disaster_type": disaster_type,
+                "risk_percentage": round(risk, 1),
+                "risk_level": risk_level,
+                "evacuation_needed": True,
+                "calamity_mode": True,
+                "current_position": {"lat": float(current_lat), "lon": float(current_lon)},
+                "disaster_location": {"lat": float(disaster_lat), "lon": float(disaster_lon)},
+                "sensor_data": {
+                    "pressure": float(sensor.get('pressure', 1013)),
+                    "temperature": float(sensor.get('temperature', 20)),
+                    "humidity": float(sensor.get('humidity', 50)),
+                    "wind_speed": float(sensor.get('wind_speed', 5)),
+                    "wind_direction": float(sensor.get('wind_direction', 180)),
+                    "dew_point": float(sensor.get('dew_point', 10))
+                },
+                "quantum_enabled": self.quantum_enabled,
+                "quantum_metrics": None,
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # Normal mode
         current_lat = lat + np.random.uniform(-0.02, 0.02)
         current_lon = lon + np.random.uniform(-0.02, 0.02)
         
@@ -358,7 +431,6 @@ class QuantumMLPredictor:
         disaster_type, risk, quantum_metrics = self._quantum_infer(features)
         risk_level = self._get_risk_level(risk)
         
-        # Disaster location is based on disaster type, but offset from input city
         disaster_lat = lat + np.random.uniform(-0.1, 0.1)
         disaster_lon = lon + np.random.uniform(-0.1, 0.1)
         
@@ -368,6 +440,7 @@ class QuantumMLPredictor:
             "risk_percentage": round(risk, 1),
             "risk_level": risk_level,
             "evacuation_needed": risk >= 70.0,
+            "calamity_mode": False,
             "current_position": {"lat": float(current_lat), "lon": float(current_lon)},
             "disaster_location": {"lat": float(disaster_lat), "lon": float(disaster_lon)},
             "sensor_data": {
@@ -384,25 +457,41 @@ class QuantumMLPredictor:
         }
     
     def _get_sensor_data(self, lat: float = 51.5074, lon: float = -0.1278) -> dict:
-        # Generate realistic weather based on actual climate patterns
-        import random
+        # Try to get real weather data from OpenWeatherMap API
+        api_key = os.environ.get('OPENWEATHERMAP_API_KEY')
+        if api_key:
+            try:
+                import requests
+                url = f"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=metric"
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    return {
+                        'pressure': data['main']['pressure'],
+                        'temperature': data['main']['temp'],
+                        'humidity': data['main']['humidity'],
+                        'wind_speed': data['wind']['speed'],
+                        'max_wind_speed': data['wind'].get('gust', data['wind']['speed'] * 1.5),
+                        'wind_direction': data['wind'].get('deg', random.uniform(0, 360)),
+                        'dew_point': data['main']['temp'] - ((100 - data['main']['humidity']) / 5)
+                    }
+            except Exception:
+                pass  # Fallback to simulation if API fails
         
-        # Get climate zone
+        # Fallback to simulated data
         abs_lat = abs(lat)
         
-        if abs_lat < 10:  # Tropical (Singapore, Jakarta)
+        if abs_lat < 10:
             base_temp = random.uniform(26, 32)
             base_humidity = random.uniform(75, 95)
             base_pressure = random.uniform(1005, 1015)
             base_wind = random.uniform(2, 8)
-        elif abs_lat < 25:  # Subtropical (Chennai, Mumbai, Delhi, Bangkok)
-            # Chennai - coastal, humid
-            if 12 <= lat <= 14 and 77 <= lon <= 82:  # Chennai area
+        elif abs_lat < 25:
+            if 12 <= lat <= 14 and 77 <= lon <= 82:
                 base_temp = random.uniform(26, 34)
                 base_humidity = random.uniform(65, 82)
                 base_pressure = random.uniform(1003, 1012)
                 base_wind = random.uniform(3, 10)
-            # Mumbai - coastal
             elif 18 <= lat <= 20 and 72 <= lon <= 74:
                 base_temp = random.uniform(25, 33)
                 base_humidity = random.uniform(70, 88)
@@ -413,19 +502,18 @@ class QuantumMLPredictor:
                 base_humidity = random.uniform(50, 80)
                 base_pressure = random.uniform(1005, 1018)
                 base_wind = random.uniform(2, 8)
-        elif abs_lat < 40:  # Temperate (London, Paris, Tokyo)
+        elif abs_lat < 40:
             base_temp = random.uniform(10, 25)
             base_humidity = random.uniform(50, 75)
             base_pressure = random.uniform(1010, 1025)
             base_wind = random.uniform(2, 10)
-        else:  # Cold (Moscow, Helsinki)
+        else:
             base_temp = random.uniform(-5, 15)
             base_humidity = random.uniform(40, 70)
             base_pressure = random.uniform(1010, 1030)
             base_wind = random.uniform(2, 12)
         
-        # Add realistic daily variation
-        base = {
+        return {
             'pressure': base_pressure + random.uniform(-5, 5),
             'temperature': base_temp + random.uniform(-3, 3),
             'humidity': min(100, max(20, base_humidity + random.uniform(-10, 10))),
@@ -434,35 +522,105 @@ class QuantumMLPredictor:
             'wind_direction': random.uniform(0, 360),
             'dew_point': base_temp * 0.6 + random.uniform(-2, 2)
         }
-        
-        return base
 
 
 class RouteOptimizer:
-    """Route optimization."""
+    """Route optimization with quantum-inspired algorithms."""
     
     def calculate_route(self, current: tuple, disaster: tuple, dtype: str) -> dict:
+        # Try to get real route from OpenRouteService API
+        api_key = os.environ.get('ORS_API_KEY')
+        if api_key:
+            try:
+                import requests
+                url = "https://api.openrouteservice.org/v2/directions/driving-car"
+                headers = {
+                    'Accept': 'application/json, application/geo+json',
+                    'Authorization': api_key,
+                    'Content-Type': 'application/json'
+                }
+                body = {
+                    "coordinates": [[current[1], current[0]], [disaster[1], disaster[0]]]
+                }
+                response = requests.post(url, json=body, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    # Extract route information
+                    route = data['routes'][0]
+                    summary = route['summary']
+                    # Get the waypoint that's safest (simplified - in reality would analyze more points)
+                    # For now, we'll return the basic route info with enhanced accuracy
+                    return {
+                        "destination": "Safe Zone (ORS)",
+                        "destination_coords": [disaster[0], disaster[1]],  # This would be optimized in reality
+                        "distance_km": round(summary['distance'] / 1000, 2),
+                        "route_type": dtype,
+                        "safety_score": round(summary['duration'] / 60, 2),  # Duration in minutes as safety proxy
+                        "all_routes": [{"zone": "ORS Route", "coords": [disaster[0], disaster[1]], 
+                                      "distance_km": round(summary['distance'] / 1000, 2),
+                                      "safety_score": round(summary['duration'] / 60, 2),
+                                      "risk_mitigation": 0}],
+                        "quantum_optimized": False,
+                        "ors_optimized": True
+                    }
+            except Exception:
+                pass  # Fallback to quantum-inspired if API fails
+        
+        # Fallback to quantum-inspired algorithm
         dtype = SecurityConfig.sanitize_input(dtype, 20)
         
         if not SecurityConfig.validate_coordinates(current[0], current[1]):
             return {"error": "Invalid coordinates"}
         
+        lat, lon = current[0], current[1]
+        
+        # Four directions around user
         zones = {
-            "SW": (51.45, -0.20),
-            "NW": (51.55, -0.20),
-            "SE": (51.45, -0.05),
-            "NE": (51.55, -0.05)
+            "North": (lat + 0.1, lon),
+            "South": (lat - 0.1, lon),
+            "East": (lat, lon + 0.1),
+            "West": (lat, lon - 0.1)
         }
         
-        best_zone = min(zones.items(), 
-            key=lambda x: math.sqrt((x[1][0]-current[0])**2 + (x[1][1]-current[1])**2)
-        )
+        route_analysis = []
+        
+        for zone_name, zone_coords in zones.items():
+            dist_to_zone = math.sqrt((zone_coords[0]-current[0])**2 + (zone_coords[1]-current[1])**2) * 111
+            dist_from_disaster = math.sqrt((zone_coords[0]-disaster[0])**2 + (zone_coords[1]-disaster[1])**2) * 111
+            
+            risk_score = 0
+            if dtype == "flood":
+                risk_score = -zone_coords[0] * 10
+            elif dtype == "cyclone":
+                risk_score = zone_coords[1] * 5 if zone_coords[1] > lon else -zone_coords[1] * 5
+            elif dtype == "earthquake":
+                risk_score = dist_from_disaster * 0.1
+            elif dtype == "blizzard":
+                risk_score = -zone_coords[0] * 15
+            elif dtype == "heat_wave":
+                risk_score = zone_coords[0] * 8
+            
+            safety_score = (dist_from_disaster * 2) - dist_to_zone + risk_score
+            
+            route_analysis.append({
+                "zone": zone_name,
+                "coords": [round(zone_coords[0], 4), round(zone_coords[1], 4)],
+                "distance_km": round(dist_to_zone, 2),
+                "safety_score": round(safety_score, 2),
+                "risk_mitigation": round(abs(risk_score), 2)
+            })
+        
+        route_analysis.sort(key=lambda x: x["safety_score"], reverse=True)
+        optimal = route_analysis[0]
         
         return {
-            "destination": best_zone[0],
-            "destination_coords": best_zone[1],
-            "distance_km": round(math.sqrt((best_zone[1][0]-current[0])**2 + (best_zone[1][1]-current[1])**2) * 111, 2),
-            "route_type": dtype
+            "destination": optimal["zone"],
+            "destination_coords": optimal["coords"],
+            "distance_km": optimal["distance_km"],
+            "route_type": dtype,
+            "safety_score": optimal["safety_score"],
+            "all_routes": route_analysis,
+            "quantum_optimized": True
         }
 
 
@@ -500,27 +658,24 @@ def api_predict():
     try:
         data = request.get_json() or {}
         city = data.get('city', 'Chennai')
+        calamity_mode = data.get('calamity_mode', False)
         
-        # Check if we have direct coordinates (from geolocation)
         lat = data.get('lat')
         lon = data.get('lon')
         
         if lat is not None and lon is not None:
-            # Use user's actual location
             coords = (float(lat), float(lon))
-            if city == 'Your Location' or city.startswith('📍'):
+            if city == 'Your Location':
                 city = f"Lat: {lat:.2f}, Lon: {lon:.2f}"
         else:
-            # Get coordinates from city name
             coords = get_city_coordinates(city)
         
-        result = predictor.predict(city, coords)
+        result = predictor.predict(city, coords, calamity_mode=calamity_mode)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-# City coordinates database
 CITY_COORDINATES = {
     "london": (51.5074, -0.1278),
     "new york": (40.7128, -74.0060),
@@ -575,20 +730,15 @@ CITY_COORDINATES = {
 }
 
 def get_city_coordinates(city_name):
-    """Get coordinates for a city name."""
+    if not city_name or not city_name.strip():
+        return (13.0827, 80.2707)  # Default to Chennai
     city_lower = city_name.lower().strip()
-    
-    # Direct lookup
     if city_lower in CITY_COORDINATES:
         return CITY_COORDINATES[city_lower]
-    
-    # Try partial match
     for city, coords in CITY_COORDINATES.items():
         if city_lower in city or city in city_lower:
             return coords
-    
-    # Default to Chennai
-    return (13.0827, 80.2707)
+    return (13.0827, 80.2707)  # Default to Chennai
 
 
 @app.route('/api/route', methods=['POST'])

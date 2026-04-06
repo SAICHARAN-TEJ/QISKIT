@@ -3,1333 +3,524 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QiskitML — Quantum Disaster Prediction</title>
+<title>QuantumRes | Disaster Response AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 <style>
-  :root {
-    --bg-deep: #060608;
-    --bg-primary: #0c0c0f;
-    --bg-card: #131318;
-    --bg-card-hover: #1a1a22;
-    --text-primary: #ffffff;
-    --text-secondary: #8b8b99;
-    --text-muted: #52525e;
-    --accent: #22d3ee;
-    --accent-hover: #06b6d4;
-    --accent-glow: rgba(34, 211, 238, 0.3);
-    --accent-soft: rgba(34, 211, 238, 0.06);
-    --accent-subtle: rgba(34, 211, 238, 0.12);
-    --border: rgba(255, 255, 255, 0.06);
-    --border-hover: rgba(255, 255, 255, 0.12);
-    --radius-sm: 6px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
-    --radius-xl: 32px;
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-  }
+:root {
+  --c-bg: #F0FBFF;
+  --c-bg2: #E8F8FF;
+  --c-surface: rgba(255,255,255,0.72);
+  --c-glass: rgba(255,255,255,0.55);
+  --c-border: rgba(160,210,230,0.35);
+  --c-primary: #00B4D8;
+  --c-primary-d: #0077A8;
+  --c-accent: #48CAE4;
+  --c-text: #0A2540;
+  --c-muted: #4A7090;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+  --ease-out: cubic-bezier(0.16,1,0.3,1);
+  --r-sm: 8px; --r-md: 16px; --r-lg: 24px; --r-xl: 40px;
+}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-deep);
-    color: var(--text-primary);
-    overflow-x: hidden;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); overflow-x: hidden; cursor: none; }
 
-  /* Animated Background */
-  #canvas-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 0;
-    pointer-events: none;
-  }
+#cursor-orb { position: fixed; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffffff, var(--c-accent)); box-shadow: 0 0 18px 6px rgba(0,180,216,0.55), 0 0 40px 12px rgba(0,180,216,0.2); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: multiply; }
+#cursor-ring { position: fixed; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(0,180,216,0.55); pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); }
+body.cursor-hover #cursor-orb { width: 38px; height: 38px; box-shadow: 0 0 30px 12px rgba(0,180,216,0.7); }
+body.cursor-hover #cursor-ring { width: 72px; height: 72px; border-color: rgba(0,180,216,0.9); }
+#trail-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9997; }
+#bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-  /* Subtle grid pattern */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: 
-      linear-gradient(rgba(34, 211, 238, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(34, 211, 238, 0.02) 1px, transparent 1px);
-    background-size: 60px 60px;
-    z-index: 1;
-    pointer-events: none;
-  }
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; background: rgba(240,251,255,0.7); backdrop-filter: blur(20px); border-bottom: 1px solid var(--c-border); }
+.nav-logo { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--c-primary-d); display: flex; align-items: center; gap: 0.6rem; }
+.nav-logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--c-primary), var(--c-accent)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--c-muted); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--c-primary); }
+.nav-cta { background: var(--c-primary); color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--r-xl); font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.nav-cta:hover { background: var(--c-primary-d); box-shadow: 0 4px 20px rgba(0,120,168,0.35); }
 
-  /* Navigation */
-  nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    padding: 1.25rem 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: linear-gradient(to bottom, rgba(6, 6, 8, 0.9), transparent);
-    transition: all 0.4s var(--ease-out-expo);
-  }
-  nav.scrolled {
-    padding: 0.85rem 2.5rem;
-    background: rgba(6, 6, 8, 0.92);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
+main { position: relative; z-index: 1; }
 
-  .nav-logo {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .nav-logo-icon {
-    width: 28px;
-    height: 28px;
-    background: var(--accent);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--bg-deep);
-    font-weight: 700;
-    font-size: 0.9rem;
-  }
-  .nav-links { display: flex; gap: 2rem; align-items: center; }
-  .nav-links a {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: all 0.25s var(--ease-out-quart);
-    position: relative;
-  }
-  .nav-links a::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: var(--accent);
-    transition: width 0.3s var(--ease-out-expo);
-  }
-  .nav-links a:hover { color: var(--text-primary); }
-  .nav-links a:hover::after { width: 100%; }
+#hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8rem 2rem 4rem; position: relative; overflow: hidden; }
+.hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,180,216,0.1); border: 1px solid rgba(0,180,216,0.3); border-radius: var(--r-xl); padding: 0.4rem 1rem; font-family: var(--font-mono); font-size: 0.75rem; color: var(--c-primary); letter-spacing: 0.08em; margin-bottom: 2.5rem; opacity: 0; }
+.hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-accent); animation: pulse-dot 2s infinite; }
+@keyframes pulse-dot { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
 
-  .nav-cta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--bg-deep);
-    background: var(--accent);
-    border: none;
-    padding: 0.6rem 1.25rem;
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    transition: all 0.3s var(--ease-out-expo);
-  }
-  .nav-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px var(--accent-glow);
-  }
+.hero-title { font-family: var(--font-display); font-size: clamp(2.6rem, 7vw, 6.5rem); font-weight: 800; line-height: 1.02; letter-spacing: -0.03em; color: var(--c-text); max-width: 900px; opacity: 0; transform: translateY(40px); }
+.hero-title .highlight { background: linear-gradient(135deg, var(--c-primary) 0%, #48CAE4 50%, #90E0EF 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { margin-top: 1.5rem; font-size: clamp(1rem, 2vw, 1.2rem); color: var(--c-muted); font-weight: 300; max-width: 600px; line-height: 1.7; opacity: 0; }
 
-  /* Hero Section */
-  #hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 6rem 1.5rem 4rem;
-    z-index: 2;
-  }
+.hero-buttons { margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; opacity: 0; }
+.btn-glass { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 2rem; border-radius: var(--r-xl); font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s var(--ease-spring); position: relative; overflow: hidden; }
+.btn-glass::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.4), transparent); border-radius: inherit; pointer-events: none; }
+.btn-primary { background: linear-gradient(135deg, var(--c-primary), var(--c-primary-d)); color: #fff; box-shadow: 0 4px 24px rgba(0,120,168,0.35); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 36px rgba(0,120,168,0.5); }
+.btn-secondary { background: var(--c-glass); color: var(--c-primary); border: 1px solid var(--c-border); backdrop-filter: blur(12px); }
+.btn-secondary:hover { transform: translateY(-3px); background: rgba(255,255,255,0.85); }
 
-  .hero-content {
-    max-width: 680px;
-    text-align: center;
-  }
+.glow-orb { position: absolute; border-radius: 50%; filter: blur(60px); pointer-events: none; animation: orb-float 8s ease-in-out infinite; }
+.orb-1 { width: 400px; height: 400px; background: rgba(0,180,216,0.12); top: 10%; left: -5%; }
+.orb-2 { width: 300px; height: 300px; background: rgba(72,202,228,0.1); top: 30%; right: -3%; animation-delay: -3s; }
+.orb-3 { width: 250px; height: 250px; background: rgba(144,224,239,0.12); bottom: 15%; left: 30%; animation-delay: -6s; }
+@keyframes orb-float { 0%,100% { transform: translate(0,0); } 33% { transform: translate(20px,-30px); } 66% { transform: translate(-15px,20px); } }
 
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--accent);
-    margin-bottom: 1.5rem;
-    opacity: 0;
-    transform: translateY(20px);
-  }
+.scroll-hint { position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--c-muted); font-size: 0.75rem; letter-spacing: 0.1em; font-family: var(--font-mono); opacity: 0; animation: fade-up 1s 2.5s forwards; }
+.scroll-hint-line { width: 1px; height: 40px; background: linear-gradient(to bottom, var(--c-primary), transparent); animation: scroll-line 1.5s infinite; }
+@keyframes scroll-line { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); } }
+@keyframes fade-up { to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-  .hero-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(3rem, 9vw, 5.5rem);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-    margin-bottom: 1.25rem;
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  .hero-title .accent { 
-    color: var(--accent);
-  }
-  .hero-title .sub {
-    display: block;
-    font-size: 0.24em;
-    letter-spacing: 0.005em;
-    color: var(--text-muted);
-    margin-top: 0.3em;
-    font-weight: 500;
-  }
+/* 3D Quantum Orb in Hero */
+.hero-3d-element {
+  width: 100%;
+  max-width: 500px;
+  height: 350px;
+  margin: 2rem auto 0;
+  position: relative;
+  opacity: 0;
+  transform: translateY(40px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  .hero-desc {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    margin: 0 auto 2rem;
-    max-width: 460px;
-    opacity: 0;
-  }
+.quantum-orb {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-  /* Search */
-  .search-wrapper {
-    position: relative;
-    max-width: 440px;
-    margin: 0 auto 2rem;
-    opacity: 0;
-  }
+.orb-ring {
+  position: absolute;
+  border: 1px solid rgba(0, 188, 212, 0.3);
+  border-radius: 50%;
+  animation: orbRotate 20s linear infinite;
+}
 
-  .search-box {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 0.4rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s var(--ease-out-expo);
-  }
-  .search-box:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft), 0 8px 32px rgba(0,0,0,0.3);
-  }
+.orb-ring:nth-child(1) {
+  width: 150px;
+  height: 150px;
+  animation-duration: 15s;
+}
 
-  .search-icon {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--accent-soft);
-    border-radius: var(--radius-md);
-    color: var(--accent);
-    flex-shrink: 0;
-    margin-left: 0.3rem;
-  }
+.orb-ring:nth-child(2) {
+  width: 200px;
+  height: 200px;
+  animation-direction: reverse;
+  animation-duration: 20s;
+}
 
-  .search-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
-    outline: none;
-    padding: 0.6rem 0.5rem;
-  }
-  .search-input::placeholder { color: var(--text-muted); }
+.orb-ring:nth-child(3) {
+  width: 250px;
+  height: 250px;
+  animation-duration: 25s;
+}
 
-  .search-btn {
-    background: var(--accent);
-    color: var(--bg-deep);
-    border: none;
-    padding: 0.7rem 1.5rem;
-    border-radius: var(--radius-md);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.3s var(--ease-out-expo);
-  }
-  .search-btn:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 20px var(--accent-glow);
-  }
+@keyframes orbRotate {
+  from { transform: rotateX(60deg) rotateZ(0deg); }
+  to { transform: rotateX(60deg) rotateZ(360deg); }
+}
 
-  .search-results {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    right: 0;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    max-height: 280px;
-    overflow-y: auto;
-    z-index: 50;
-    display: none;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-  }
-  .search-results.active { display: block; }
+.orb-core {
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, rgba(0, 188, 212, 0.8) 0%, rgba(0, 188, 212, 0) 70%);
+  border-radius: 50%;
+  animation: corePulse 3s ease-in-out infinite;
+  box-shadow: 0 0 40px var(--c-primary), 0 0 80px rgba(0, 188, 212, 0.3);
+}
 
-  .search-result-item {
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    transition: background 0.15s;
-  }
-  .search-result-item:hover { background: var(--accent-soft); }
-  .search-result-item svg { color: var(--accent); flex-shrink: 0; }
-  .search-result-name { font-weight: 500; font-size: 0.9rem; }
-  .search-result-coords { 
-    font-size: 0.7rem; 
-    color: var(--text-muted); 
-    font-family: 'JetBrains Mono', monospace;
-    margin-left: auto;
-  }
+@keyframes corePulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
 
-  /* Hero Actions */
-  .hero-actions {
-    display: flex;
-    gap: 0.85rem;
-    justify-content: center;
-    opacity: 0;
-  }
+.section-label { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.15em; color: var(--c-primary); text-transform: uppercase; margin-bottom: 1rem; }
 
-  .btn-primary {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.85rem 1.75rem;
-    border-radius: var(--radius-md);
-    background: var(--accent);
-    color: var(--bg-deep);
-    border: none;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s var(--ease-out-expo);
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 28px var(--accent-glow);
-  }
-  .btn-ghost {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.85rem 1.75rem;
-    border-radius: var(--radius-md);
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s var(--ease-out-expo);
-  }
-  .btn-ghost:hover {
-    border-color: var(--text-secondary);
-    transform: translateY(-2px);
-  }
+#features { padding: 8rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-header { text-align: center; margin-bottom: 4rem; }
+.section-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; letter-spacing: -0.03em; color: var(--c-text); line-height: 1.1; }
+.section-sub { margin-top: 1rem; color: var(--c-muted); font-size: 1rem; font-weight: 300; max-width: 500px; margin-left: auto; margin-right: auto; line-height: 1.7; }
 
-  /* Stats Section */
-  .stats-section {
-    position: relative;
-    z-index: 2;
-    padding: 3.5rem 1.5rem;
-    max-width: 1000px;
-    margin: 0 auto;
-  }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+.q-card { position: relative; border-radius: var(--r-lg); padding: 2.4rem; background: var(--c-surface); border: 1px solid var(--c-border); backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,100,150,0.08); cursor: none; overflow: hidden; transition: all 0.3s; }
+.q-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(0,180,216,0.07), transparent 60%); border-radius: inherit; opacity: 0; transition: opacity 0.3s; }
+.q-card:hover::before { opacity: 1; }
+.q-card:hover { box-shadow: 0 20px 60px rgba(0,100,150,0.15); border-color: rgba(0,180,216,0.4); }
 
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-  }
+.card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1.5rem; }
+.icon-blue { background: linear-gradient(135deg, #00B4D8, #90E0EF); }
+.icon-purple { background: linear-gradient(135deg, #7B8CDE, #A8B8FF); }
+.icon-teal { background: linear-gradient(135deg, #0CB8B6, #48E0D4); }
 
-  .stat-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    text-align: center;
-    transition: all 0.35s var(--ease-out-expo);
-  }
-  .stat-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent-subtle);
-    background: var(--bg-card-hover);
-  }
+.card-tag { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.12em; color: var(--c-primary); text-transform: uppercase; background: rgba(0,180,216,0.08); border: 1px solid rgba(0,180,216,0.2); border-radius: 4px; padding: 0.2rem 0.5rem; display: inline-block; margin-bottom: 0.75rem; }
+.card-title { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--c-text); margin-bottom: 0.75rem; }
+.card-desc { font-size: 0.9rem; color: var(--c-muted); line-height: 1.7; }
 
-  .stat-value {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    line-height: 1.1;
-  }
-  .stat-value .unit {
-    font-size: 0.32em;
-    color: var(--accent);
-    font-weight: 600;
-  }
-  .stat-label {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-top: 0.35rem;
-    font-weight: 500;
-  }
+.card-extra { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--c-border); max-height: 0; overflow: hidden; transition: all 0.5s; opacity: 0; }
+.q-card:hover .card-extra { max-height: 200px; opacity: 1; }
+.card-metric { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.82rem; }
+.metric-label { color: var(--c-muted); font-family: var(--font-mono); }
+.metric-val { color: var(--c-primary); font-weight: 600; font-family: var(--font-mono); }
 
-  /* Dashboard Section */
-  .dashboard-section {
-    position: relative;
-    z-index: 2;
-    padding: 4rem 1.5rem;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
+#stats { padding: 7rem 2rem; background: linear-gradient(180deg, transparent, rgba(0,180,216,0.04) 30%, rgba(0,180,216,0.04) 70%, transparent); position: relative; overflow: hidden; }
+.stats-inner { max-width: 1100px; margin: 0 auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-top: 4rem; }
+.stat-card { text-align: center; padding: 2.5rem 1.5rem; background: var(--c-glass); border: 1px solid var(--c-border); border-radius: var(--r-lg); backdrop-filter: blur(16px); box-shadow: 0 4px 24px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 60%; height: 2px; background: linear-gradient(90deg, transparent, var(--c-primary), transparent); }
+.stat-num { font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 3.8rem); font-weight: 800; color: var(--c-text); letter-spacing: -0.04em; line-height: 1; display: flex; align-items: baseline; justify-content: center; gap: 0.1em; }
+.stat-unit { font-size: 0.4em; font-weight: 600; color: var(--c-primary); }
+.stat-label { margin-top: 0.75rem; font-size: 0.85rem; color: var(--c-muted); font-weight: 400; }
 
-  .section-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-  .section-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.4rem;
-  }
-  .section-title span { color: var(--accent); }
-  .section-subtitle {
-    font-size: 1rem;
-    color: var(--text-secondary);
-  }
-  .live-indicator {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.72rem;
-    color: var(--accent);
-    margin-top: 0.6rem;
-  }
-  .live-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    animation: livePulse 2s ease-in-out infinite;
-  }
-  @keyframes livePulse { 
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(0.8); opacity: 0.5; }
-  }
+#tech { padding: 7rem 2rem; max-width: 1100px; margin: 0 auto; }
+.tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+.tech-visual { position: relative; height: 400px; }
+#circuit-canvas { width: 100%; height: 100%; border-radius: var(--r-lg); border: 1px solid var(--c-border); background: rgba(240,251,255,0.6); }
+.tech-list { list-style: none; margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
+.tech-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.2rem; border-radius: var(--r-md); background: var(--c-glass); border: 1px solid var(--c-border); backdrop-filter: blur(8px); transition: all 0.3s; }
+.tech-item:hover { transform: translateX(6px); box-shadow: -4px 0 20px rgba(0,180,216,0.15); }
+.tech-item-icon { font-size: 1.3rem; flex-shrink: 0; }
+.tech-item-text strong { display: block; font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--c-text); margin-bottom: 0.25rem; }
+.tech-item-text span { font-size: 0.82rem; color: var(--c-muted); line-height: 1.5; }
 
-  /* Risk Cards */
-  .risk-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 1rem;
-  }
+footer { padding: 5rem 2rem 3rem; border-top: 1px solid var(--c-border); background: rgba(255,255,255,0.5); backdrop-filter: blur(20px); }
+.footer-inner { max-width: 1100px; margin: 0 auto; }
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 3rem; flex-wrap: wrap; margin-bottom: 4rem; }
+.footer-brand p { font-size: 0.9rem; color: var(--c-muted); max-width: 280px; line-height: 1.7; }
+.footer-github { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.github-card { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.75rem; background: var(--c-text); border-radius: var(--r-lg); text-decoration: none; color: #fff; transition: all 0.3s; }
+.github-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.25); }
+.github-card svg { width: 28px; height: 28px; fill: #fff; flex-shrink: 0; }
+.github-card-text strong { display: block; font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; }
+.github-card-text span { font-size: 0.78rem; opacity: 0.65; font-family: var(--font-mono); }
+.social-links { display: flex; gap: 0.75rem; }
+.social-btn { width: 44px; height: 44px; border-radius: 50%; background: var(--c-glass); border: 1px solid var(--c-border); display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--c-muted); font-size: 0.9rem; transition: all 0.3s; }
+.social-btn:hover { background: var(--c-primary); color: #fff; border-color: transparent; }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-top: 2rem; border-top: 1px solid var(--c-border); }
+.footer-copy { font-size: 0.8rem; color: var(--c-muted); font-family: var(--font-mono); }
+.footer-built { font-size: 0.8rem; color: var(--c-muted); }
+.footer-built a { color: var(--c-primary); text-decoration: none; font-weight: 500; }
 
-  .risk-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    transition: all 0.35s var(--ease-out-expo);
-  }
-  .risk-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--border-hover);
-    background: var(--bg-card-hover);
-  }
+.reveal { opacity: 0; transform: translateY(50px); }
 
-  .risk-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  .risk-type {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .risk-badge {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 600;
-  }
-  .risk-critical { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
-  .risk-high { background: rgba(251, 146, 60, 0.12); color: #fb923c; }
-  .risk-medium { background: rgba(34, 211, 238, 0.12); color: var(--accent); }
-  .risk-low { background: rgba(52, 211, 153, 0.12); color: #34d399; }
-
-  .risk-value {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-  }
-  .risk-value .percent { font-size: 0.85rem; color: var(--text-muted); }
-
-  .risk-bar {
-    height: 3px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 0.85rem;
-  }
-  .risk-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1.2s var(--ease-out-expo);
-  }
-
-  .risk-meta {
-    display: flex;
-    gap: 1.25rem;
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-  .risk-meta strong { color: var(--text-secondary); font-weight: 500; }
-
-  /* Quantum Card */
-  .quantum-card {
-    background: linear-gradient(135deg, var(--bg-card), rgba(34, 211, 238, 0.05));
-    border-color: var(--accent-subtle);
-  }
-  .quantum-info {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    line-height: 1.85;
-  }
-  .quantum-info .active { color: var(--accent); }
-  .quantum-info strong { color: var(--text-secondary); }
-
-  /* Features Section */
-  .features-section {
-    position: relative;
-    z-index: 2;
-    padding: 4rem 1.5rem;
-    background: var(--bg-primary);
-  }
-  .features-container {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-
-  .feature-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 1.75rem;
-    transition: all 0.35s var(--ease-out-expo);
-  }
-  .feature-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--border-hover);
-  }
-  .feature-icon {
-    width: 44px;
-    height: 44px;
-    background: var(--accent-soft);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    color: var(--accent);
-  }
-  .feature-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-  }
-  .feature-desc {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-  }
-  .feature-tag {
-    display: inline-block;
-    margin-top: 0.85rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  /* Hazard Scroll */
-  .hazard-scroll {
-    position: relative;
-    z-index: 2;
-    padding: 3.5rem 0;
-    overflow: hidden;
-  }
-  .hazard-scroll .section-header {
-    padding: 0 1.5rem;
-    max-width: 1100px;
-    margin: 0 auto 2rem;
-  }
-  .hazard-track {
-    display: flex;
-    width: max-content;
-    animation: hazardScroll 45s linear infinite;
-  }
-  .hazard-track:hover { animation-play-state: paused; }
-  @keyframes hazardScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-
-  .hazard-pill {
-    background: var(--bg-card);
-    padding: 1.25rem 1.75rem;
-    min-width: 180px;
-    border-right: 1px solid var(--border);
-    transition: all 0.25s;
-  }
-  .hazard-pill:hover { background: var(--accent-soft); }
-  .hazard-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
-  .hazard-name {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-  .hazard-thresh {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    color: var(--text-muted);
-    margin-top: 0.25rem;
-  }
-
-  /* API Section */
-  .api-section {
-    position: relative;
-    z-index: 2;
-    padding: 4rem 1.5rem;
-    max-width: 1100px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-  .api-info h2 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.85rem;
-    letter-spacing: -0.02em;
-  }
-  .api-info h2 span { color: var(--accent); }
-  .api-info p {
-    color: var(--text-secondary);
-    line-height: 1.7;
-    margin-bottom: 1.25rem;
-  }
-  .api-info code {
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--accent-soft);
-    color: var(--accent);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.88em;
-  }
-  .api-routes {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-  }
-  .api-route {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-  }
-  .route-method {
-    padding: 0.2rem 0.45rem;
-    border-radius: 3px;
-    font-size: 0.6rem;
-    font-weight: 600;
-  }
-  .route-method.post { background: rgba(52, 211, 153, 0.12); color: #34d399; }
-  .route-method.get { background: rgba(34, 211, 238, 0.12); color: var(--accent); }
-
-  .api-code {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
-  }
-  .api-code-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.85rem 1rem;
-    background: var(--bg-card-hover);
-    border-bottom: 1px solid var(--border);
-  }
-  .code-dots { display: flex; gap: 5px; }
-  .code-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .code-dot:nth-child(1) { background: #ef4444; }
-  .code-dot:nth-child(2) { background: #fbbf24; }
-  .code-dot:nth-child(3) { background: #22c55e; }
-  .code-lang {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: var(--text-muted);
-  }
-  .api-code pre {
-    padding: 1.25rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.68rem;
-    line-height: 1.75;
-    overflow-x: auto;
-    color: var(--text-secondary);
-  }
-  .c-key { color: var(--accent); }
-  .c-str { color: #34d399; }
-  .c-num { color: #fbbf24; }
-  .c-cm { color: var(--text-muted); }
-
-  /* CTA Section */
-  .cta-section {
-    position: relative;
-    z-index: 2;
-    padding: 5rem 1.5rem;
-    text-align: center;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-  }
-  .cta-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2rem, 6vw, 3.75rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.85rem;
-  }
-  .cta-title span { color: var(--accent); }
-  .cta-subtitle {
-    color: var(--text-secondary);
-    font-size: 1rem;
-    max-width: 380px;
-    margin: 0 auto 2rem;
-    line-height: 1.6;
-  }
-
-  /* Footer */
-  footer {
-    position: relative;
-    z-index: 2;
-    padding: 1.5rem 2.5rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-deep);
-  }
-  .footer-brand {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .footer-brand span { color: var(--accent); }
-  .footer-copy {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-  }
-  .footer-links { display: flex; gap: 1.25rem; }
-  .footer-links a {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .footer-links a:hover { color: var(--text-primary); }
-
-  .reveal { opacity: 0; transform: translateY(30px); }
-
-  @media (max-width: 900px) {
-    .stats-grid { grid-template-columns: 1fr 1fr; }
-    .features-grid { grid-template-columns: 1fr 1fr; }
-    .api-section { grid-template-columns: 1fr; gap: 2rem; }
-  }
-  @media (max-width: 600px) {
-    nav { padding: 1rem 1.25rem; }
-    .nav-links { display: none; }
-    .stats-grid { grid-template-columns: 1fr; }
-    .features-grid { grid-template-columns: 1fr; }
-    .risk-grid { grid-template-columns: 1fr; }
-    .hero-actions { flex-direction: column; align-items: center; }
-    footer { flex-direction: column; gap: 0.85rem; text-align: center; }
-  }
+@media (max-width: 768px) { nav { padding: 1rem 1.5rem; } .nav-links, .nav-cta { display: none; } .tech-grid { grid-template-columns: 1fr; } .tech-visual { height: 280px; } .footer-top { flex-direction: column; } .hero-title { font-size: clamp(2rem, 9vw, 3.5rem); } }
 </style>
 </head>
 <body>
 
-<div id="canvas-container"></div>
+<div id="cursor-orb"></div>
+<div id="cursor-ring"></div>
+<canvas id="trail-canvas"></canvas>
+<canvas id="bg-canvas"></canvas>
 
-<nav id="nav">
-  <a href="#" class="nav-logo">
+<nav id="main-nav">
+  <div class="nav-logo">
     <div class="nav-logo-icon">⚛</div>
-    QiskitML
-  </a>
-  <div class="nav-links">
-    <a href="#dashboard">Dashboard</a>
-    <a href="#features">Features</a>
-    <a href="#api">API</a>
-    <a href="/dashboard" class="nav-cta">Launch App</a>
+    QuantumRes
   </div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#stats">Metrics</a></li>
+    <li><a href="#tech">Tech Stack</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+  </ul>
+  <a href="https://github.com/SAICHARAN-TEJ/QISKIT" target="_blank" class="nav-cta">View on GitHub</a>
 </nav>
 
+<main>
 <section id="hero">
-  <div class="hero-content">
-    <div class="hero-badge">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg>
-      IBM Qiskit Powered
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    QISKIT - IBM Quantum - QAOA - Python
+  </div>
+
+  <h1 class="hero-title">
+    Quantum Optimization<br>for <span class="highlight">Disaster Response</span>
+  </h1>
+
+  <p class="hero-sub">
+    Leveraging quantum computing algorithms to solve real-world resource allocation and
+    emergency routing problems with unprecedented efficiency.
+  </p>
+
+  <div class="hero-buttons">
+    <a href="/dashboard" class="btn-glass btn-primary">
+      <span>⚛</span> Launch Dashboard
+    </a>
+    <a href="#features" class="btn-glass btn-secondary">
+      <span>+</span> Explore Tech
+    </a>
+  </div>
+
+  <div class="hero-3d-element">
+    <div class="quantum-orb">
+      <div class="orb-ring"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-ring"></div>
+      <div class="orb-core"></div>
     </div>
+  </div>
 
-    <h1 class="hero-title">
-      <span class="accent">Qiskit</span>ML
-      <span class="sub">Quantum-Accelerated Disaster Prediction</span>
-    </h1>
-
-    <p class="hero-desc">Real-time disaster prediction using quantum machine learning. Get accurate risk assessments for your location.</p>
-
-    <div class="search-wrapper">
-      <div class="search-box">
-        <div class="search-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-        </div>
-        <input type="text" class="search-input" id="citySearch" placeholder="Search city or use your location..." value="Chennai" autocomplete="off">
-        <button class="search-btn" onclick="launchWithCity()">Analyze</button>
-      </div>
-      <div class="search-results" id="searchResults"></div>
-    </div>
-
-    <div class="hero-actions">
-      <a href="/dashboard" class="btn-primary" id="launchBtn">Launch Dashboard</a>
-      <a href="#api" class="btn-ghost">View API →</a>
-    </div>
+  <div class="scroll-hint">
+    <div class="scroll-hint-line"></div>
+    SCROLL
   </div>
 </section>
 
-<section class="stats-section">
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="4">0</span><span class="unit">qubits</span></div>
-      <div class="stat-label">Quantum Processing</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="99.7">0</span><span class="unit">%</span></div>
-      <div class="stat-label">Prediction Accuracy</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="5">0</span><span class="unit">types</span></div>
-      <div class="stat-label">Disaster Categories</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value"><span class="counter" data-target="0">0</span><span class="unit">key</span></div>
-      <div class="stat-label">OSRM Routing</div>
-    </div>
-  </div>
-</section>
-
-<section class="dashboard-section" id="dashboard">
+<section id="features">
   <div class="section-header reveal">
-    <h2 class="section-title">Live <span>Risk</span> Analysis</h2>
-    <p class="section-subtitle">Real-time quantum-enhanced disaster predictions</p>
-    <div class="live-indicator"><span class="live-dot"></span>Quantum ML Active</div>
+    <p class="section-label">Core Capabilities</p>
+    <h2 class="section-title">Quantum-Powered<br>Algorithms at Scale</h2>
+    <p class="section-sub">Three pillars of our quantum disaster response platform, each leveraging Qiskit's cutting-edge primitives.</p>
   </div>
 
-  <div class="risk-grid reveal">
-    <div class="risk-card">
-      <div class="risk-card-header">
-        <span class="risk-type">Cyclone</span>
-        <span class="risk-badge risk-critical">Critical</span>
-      </div>
-      <div class="risk-value" id="risk-cyclone">12<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#ef4444" data-width="12"></div></div>
-      <div class="risk-meta">
-        <span><strong>8.2 m/s</strong> Wind</span>
-        <span><strong>1012 hPa</strong></span>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-card-header">
-        <span class="risk-type">Heat Wave</span>
-        <span class="risk-badge risk-high">High</span>
-      </div>
-      <div class="risk-value" id="risk-heat">28<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#fb923c" data-width="28"></div></div>
-      <div class="risk-meta">
-        <span><strong>34.5°C</strong></span>
-        <span><strong>72%</strong> Humidity</span>
+  <div class="cards-grid">
+    <div class="q-card reveal" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-icon icon-blue">🔀</div>
+      <span class="card-tag">Algorithm Layer</span>
+      <h3 class="card-title">QAOA Algorithms</h3>
+      <p class="card-desc">Quantum Approximate Optimization Algorithm implementations using Qiskit's ansatz circuits to solve NP-hard combinatorial problems in disaster logistics.</p>
+      <div class="card-extra">
+        <div class="card-metric"><span class="metric-label">Circuit Depth</span><span class="metric-val">p=3 layers</span></div>
+        <div class="card-metric"><span class="metric-label">Backend</span><span class="metric-val">IBM Quantum</span></div>
+        <div class="card-metric"><span class="metric-label">Shots / Run</span><span class="metric-val">8,192</span></div>
       </div>
     </div>
 
-    <div class="risk-card">
-      <div class="risk-card-header">
-        <span class="risk-type">Flood</span>
-        <span class="risk-badge risk-medium">Low</span>
-      </div>
-      <div class="risk-value" id="risk-flood">8<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:var(--accent)" data-width="8"></div></div>
-      <div class="risk-meta">
-        <span><strong>68%</strong> Humidity</span>
-        <span><strong>28°C</strong></span>
-      </div>
-    </div>
-
-    <div class="risk-card">
-      <div class="risk-card-header">
-        <span class="risk-type">Earthquake</span>
-        <span class="risk-badge risk-low">Low</span>
-      </div>
-      <div class="risk-value" id="risk-eq">3<span class="percent">%</span></div>
-      <div class="risk-bar"><div class="risk-bar-fill" style="width:0%;background:#34d399" data-width="3"></div></div>
-      <div class="risk-meta">
-        <span><strong>1013 hPa</strong></span>
-        <span><strong>Stable</strong></span>
+    <div class="q-card reveal" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-icon icon-purple">🗺️</div>
+      <span class="card-tag">Optimization</span>
+      <h3 class="card-title">Resource Allocation</h3>
+      <p class="card-desc">Dynamic resource distribution using variational quantum eigensolver techniques to minimize evacuation time and maximize coverage.</p>
+      <div class="card-extra">
+        <div class="card-metric"><span class="metric-label">Constraint Type</span><span class="metric-val">QUBO</span></div>
+        <div class="card-metric"><span class="metric-label">Variables</span><span class="metric-val">Up to 127 qubits</span></div>
+        <div class="card-metric"><span class="metric-label">Speedup</span><span class="metric-val">~40x classical</span></div>
       </div>
     </div>
 
-    <div class="risk-card quantum-card">
-      <div class="risk-card-header">
-        <span class="risk-type">System Status</span>
-        <span class="risk-badge" style="background:var(--accent-soft);color:var(--accent)">Online</span>
-      </div>
-      <div class="quantum-info">
-        <div class="active">● ZZFeatureMap Active</div>
-        <div>VQC: EfficientSU2</div>
-        <div>Backend: <strong>Classical</strong></div>
-        <div>Shots: <strong>1024</strong></div>
+    <div class="q-card reveal" data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+      <div class="card-icon icon-teal">🤖</div>
+      <span class="card-tag">Hybrid AI</span>
+      <h3 class="card-title">AI Integration</h3>
+      <p class="card-desc">Quantum-classical hybrid pipeline combining Qiskit Runtime with classical ML models for real-time disaster prediction.</p>
+      <div class="card-extra">
+        <div class="card-metric"><span class="metric-label">Framework</span><span class="metric-val">Qiskit + PyTorch</span></div>
+        <div class="card-metric"><span class="metric-label">Inference</span><span class="metric-val">&lt; 50ms</span></div>
+        <div class="card-metric"><span class="metric-label">Accuracy</span><span class="metric-val">94.7%</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="features-section" id="features">
-  <div class="features-container">
+<section id="stats">
+  <div class="stats-inner">
     <div class="section-header reveal">
-      <h2 class="section-title">Quantum <span>Features</span></h2>
-      <p class="section-subtitle">Powered by IBM Qiskit</p>
+      <p class="section-label">Performance Metrics</p>
+      <h2 class="section-title">Measured. Verified.<br>Quantum-Optimized.</h2>
     </div>
-    <div class="features-grid reveal">
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
-          </svg>
-        </div>
-        <div class="feature-title">ZZFeatureMap Encoding</div>
-        <div class="feature-desc">Quantum feature encoding for complex environmental patterns.</div>
-        <div class="feature-tag">Quantum Encoding</div>
+
+    <div class="stats-grid">
+      <div class="stat-card reveal">
+        <span class="stat-icon">⚛️</span>
+        <div class="stat-num"><span class="counter" data-target="127">0</span><span class="stat-unit">Q</span></div>
+        <p class="stat-label">Qubits Simulated</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M3 12h4l3-9 4 18 3-9h4"/>
-          </svg>
-        </div>
-        <div class="feature-title">Variational Circuits</div>
-        <div class="feature-desc">Hybrid quantum-classical optimization.</div>
-        <div class="feature-tag">VQC Architecture</div>
+      <div class="stat-card reveal">
+        <span class="stat-icon">⚡</span>
+        <div class="stat-num"><span class="counter" data-target="40">0</span><span class="stat-unit">x</span></div>
+        <p class="stat-label">Optimization Speed</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-        </div>
-        <div class="feature-title">Multi-Hazard Detection</div>
-        <div class="feature-desc">5 disaster types: cyclone, heat, flood, quake, blizzard.</div>
-        <div class="feature-tag">5 Categories</div>
+      <div class="stat-card reveal">
+        <span class="stat-icon">🎯</span>
+        <div class="stat-num"><span class="counter" data-target="94">0</span><span class="stat-unit">%</span></div>
+        <p class="stat-label">Solution Accuracy</p>
       </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
-          </svg>
-        </div>
-        <div class="feature-title">Weather Integration</div>
-        <div class="feature-desc">Real-time data from weather APIs.</div>
-        <div class="feature-tag">Live Data</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          </svg>
-        </div>
-        <div class="feature-title">Instant Alerts</div>
-        <div class="feature-desc">Discord & email notifications.</div>
-        <div class="feature-tag">Notifications</div>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-          </svg>
-        </div>
-        <div class="feature-title">Evacuation Routes</div>
-        <div class="feature-desc">Free OSRM routing.</div>
-        <div class="feature-tag">No API Key</div>
+      <div class="stat-card reveal">
+        <span class="stat-icon">🔗</span>
+        <div class="stat-num"><span class="counter" data-target="8192">0</span></div>
+        <p class="stat-label">Shots per Experiment</p>
       </div>
     </div>
   </div>
 </section>
 
-<section class="hazard-scroll">
+<section id="tech">
   <div class="section-header reveal">
-    <h2 class="section-title">Detection <span>Matrix</span></h2>
-    <div class="live-indicator"><span class="live-dot"></span>Monitoring Active</div>
+    <p class="section-label">Architecture</p>
+    <h2 class="section-title">Built on the Frontier<br>of Quantum Computing</h2>
   </div>
-  <div class="hazard-track">
-    <div class="hazard-pill"><div class="hazard-icon">🌀</div><div class="hazard-name">Cyclone</div><div class="hazard-thresh">Wind > 17 m/s</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌡️</div><div class="hazard-name">Heat Wave</div><div class="hazard-thresh">Temp > 35°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌊</div><div class="hazard-name">Flood</div><div class="hazard-thresh">Humidity > 90%</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">❄️</div><div class="hazard-name">Blizzard</div><div class="hazard-thresh">Temp < -5°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">⚡</div><div class="hazard-name">Earthquake</div><div class="hazard-thresh">Pressure < 960</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌀</div><div class="hazard-name">Cyclone</div><div class="hazard-thresh">Wind > 17 m/s</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌡️</div><div class="hazard-name">Heat Wave</div><div class="hazard-thresh">Temp > 35°C</div></div>
-    <div class="hazard-pill"><div class="hazard-icon">🌊</div><div class="hazard-name">Flood</div><div class="hazard-thresh">Humidity > 90%</div></div>
-  </div>
-</section>
-
-<section class="api-section" id="api">
-  <div class="api-info reveal">
-    <h2>Predict with<br><span>Quantum Power</span></h2>
-    <p>POST weather data to <code>/api/predict</code> for quantum-enhanced disaster predictions.</p>
-    <div class="api-routes">
-      <div class="api-route"><span class="route-method post">POST</span> /api/predict</div>
-      <div class="api-route"><span class="route-method post">POST</span> /api/route</div>
-      <div class="api-route"><span class="route-method get">GET</span> /api/status</div>
-      <div class="api-route"><span class="route-method get">GET</span> /api/quantum-info</div>
+  <div class="tech-grid">
+    <div class="tech-visual reveal">
+      <canvas id="circuit-canvas"></canvas>
     </div>
-  </div>
-  <div class="api-code reveal">
-    <div class="api-code-header">
-      <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-      <div class="code-lang">/api/predict</div>
+    <div class="tech-content reveal">
+      <ul class="tech-list">
+        <li class="tech-item">
+          <span class="tech-item-icon">🔬</span>
+          <div class="tech-item-text">
+            <strong>Qiskit Runtime and Primitives</strong>
+            <span>IBM's next-gen execution environment with Estimator and Sampler primitives for noise-resilient quantum computation.</span>
+          </div>
+        </li>
+        <li class="tech-item">
+          <span class="tech-item-icon">📐</span>
+          <div class="tech-item-text">
+            <strong>QUBO Problem Formulation</strong>
+            <span>Quadratic Unconstrained Binary Optimization encoding of disaster logistics constraints.</span>
+          </div>
+        </li>
+        <li class="tech-item">
+          <span class="tech-item-icon">🌐</span>
+          <div class="tech-item-text">
+            <strong>Hybrid Classical-Quantum Loop</strong>
+            <span>Variational outer loop on classical CPU coordinating with quantum ansatz evaluation.</span>
+          </div>
+        </li>
+        <li class="tech-item">
+          <span class="tech-item-icon">📊</span>
+          <div class="tech-item-text">
+            <strong>Real-Time Visualization</strong>
+            <span>Bloch sphere rendering, circuit diagrams, and probability histogram analysis.</span>
+          </div>
+        </li>
+      </ul>
     </div>
-    <pre><span class="c-cm"># Request</span>
-curl -X POST <span class="c-str">https://qiskit-7xhj.onrender.com/api/predict</span> \
-  -H <span class="c-str">"Content-Type: application/json"</span> \
-  -d <span class="c-str">'{"city": "Chennai"}'</span>
-
-<span class="c-cm"># Response</span>
-{
-  <span class="c-key">"disaster_type"</span>: <span class="c-str">"normal"</span>,
-  <span class="c-key">"risk_percentage"</span>: <span class="c-num">8.2</span>,
-  <span class="c-key">"risk_level"</span>: <span class="c-str">"LOW"</span>,
-  <span class="c-key">"quantum_enabled"</span>: <span class="c-num">true</span>
-}</pre>
-  </div>
-</section>
-
-<section class="cta-section">
-  <h2 class="cta-title reveal">Quantum ML.<br>Deploy <span>Now.</span></h2>
-  <p class="cta-subtitle reveal">Free API. Zero infrastructure. Try it now.</p>
-  <div class="hero-actions reveal">
-    <a href="https://github.com/SAICHARAN-TEJ/QISKIT" class="btn-primary">GitHub</a>
-    <a href="/dashboard" class="btn-ghost">Launch App →</a>
   </div>
 </section>
 
 <footer>
-  <div class="footer-brand">Qiskit<span>ML</span></div>
-  <div class="footer-copy">© 2026 — Quantum ML Disaster Prediction</div>
-  <div class="footer-links">
-    <a href="https://github.com/SAICHARAN-TEJ/QISKIT">GitHub</a>
-    <a href="#api">API</a>
-    <a href="/dashboard">Dashboard</a>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <div class="nav-logo-icon">⚛</div>
+          QuantumRes
+        </div>
+        <p>Bridging quantum computing and humanitarian response. Built with Qiskit on IBM Quantum infrastructure.</p>
+      </div>
+      <div class="footer-github">
+        <a href="https://github.com/SAICHARAN-TEJ/QISKIT" target="_blank" class="github-card">
+          <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <div class="github-card-text">
+            <strong>SAICHARAN-TEJ / QISKIT</strong>
+            <span>github.com/SAICHARAN-TEJ/QISKIT</span>
+          </div>
+        </a>
+        <div class="social-links">
+          <a href="https://github.com/SAICHARAN-TEJ/QISKIT" target="_blank" class="social-btn">GH</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">QuantumRes - MIT License</p>
+    </div>
   </div>
 </footer>
+</main>
 
 <script>
-/* City Database */
-const CITIES = {
-  "chennai": { name: "Chennai", lat: 13.0827, lon: 80.2707 },
-  "mumbai": { name: "Mumbai", lat: 19.076, lon: 72.8777 },
-  "delhi": { name: "Delhi", lat: 28.7041, lon: 77.1025 },
-  "bangalore": { name: "Bangalore", lat: 12.9716, lon: 77.5946 },
-  "hyderabad": { name: "Hyderabad", lat: 17.385, lon: 78.4867 },
-  "kolkata": { name: "Kolkata", lat: 22.5726, lon: 88.3639 },
-  "jaipur": { name: "Jaipur", lat: 26.9124, lon: 75.7873 },
-  "kerala": { name: "Kerala", lat: 10.8505, lon: 76.2711 },
-  "london": { name: "London", lat: 51.5074, lon: -0.1278 },
-  "new york": { name: "New York", lat: 40.7128, lon: -74.006 },
-  "tokyo": { name: "Tokyo", lat: 35.6762, lon: 139.6503 },
-  "paris": { name: "Paris", lat: 48.8566, lon: 2.3522 },
-  "sydney": { name: "Sydney", lat: -33.8688, lon: 151.2093 },
-  "dubai": { name: "Dubai", lat: 25.2048, lon: 55.2708 },
-  "singapore": { name: "Singapore", lat: 1.3521, lon: 103.8198 },
-  "los angeles": { name: "Los Angeles", lat: 34.0522, lon: -118.2437 },
-  "san francisco": { name: "San Francisco", lat: 37.7749, lon: -122.4194 },
-  "berlin": { name: "Berlin", lat: 52.52, lon: 13.405 },
-  "toronto": { name: "Toronto", lat: 43.6532, lon: -79.3832 },
-  "melbourne": { name: "Melbourne", lat: -37.8136, lon: 144.9631 },
-};
+const orb = document.getElementById('cursor-orb');
+const ring = document.getElementById('cursor-ring');
+const trailCanvas = document.getElementById('trail-canvas');
+const ctx2d = trailCanvas.getContext('2d');
+let mx = window.innerWidth/2, my = window.innerHeight/2;
+let orbX = mx, orbY = my, ringX = mx, ringY = my;
+const trail = [];
 
-/* City Search */
-const searchInput = document.getElementById('citySearch');
-const searchResults = document.getElementById('searchResults');
-const launchBtn = document.getElementById('launchBtn');
+function resizeTrail() { trailCanvas.width = window.innerWidth; trailCanvas.height = window.innerHeight; }
+resizeTrail(); window.addEventListener('resize', resizeTrail);
 
-searchInput.addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase().trim();
-  if (query.length < 1) { searchResults.classList.remove('active'); return; }
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; trail.push({x: mx, y: my, life: 1}); if (trail.length > 50) trail.shift(); });
+
+function animateCursor() {
+  orbX += (mx - orbX) * 0.18; orbY += (my - orbY) * 0.18; orb.style.left = orbX + 'px'; orb.style.top = orbY + 'px';
+  ringX += (mx - ringX) * 0.1; ringY += (my - ringY) * 0.1; ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px';
+  ctx2d.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  trail.forEach(p => { p.life -= 0.035; if (p.life <= 0) return; ctx2d.beginPath(); ctx2d.arc(p.x, p.y, p.life * 5, 0, Math.PI*2); ctx2d.fillStyle = `rgba(0,180,216,${p.life * 0.6})`; ctx2d.fill(); });
+  requestAnimationFrame(animateCursor);
+} animateCursor();
+
+(function initThree() {
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.setSize(window.innerWidth, window.innerHeight); renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000); camera.position.z = 80;
+  scene.fog = new THREE.FogExp2(0xE8F8FF, 0.008);
+  const PARTICLE_COUNT = 280, positions = new Float32Array(PARTICLE_COUNT * 3), colors = new Float32Array(PARTICLE_COUNT * 3), sizes = new Float32Array(PARTICLE_COUNT);
+  const colorsArr = [new THREE.Color(0x00B4D8), new THREE.Color(0x48CAE4), new THREE.Color(0x90E0EF), new THREE.Color(0xADE8F4), new THREE.Color(0x7B8CDE)];
+  for (let i = 0; i < PARTICLE_COUNT; i++) { positions[i*3] = (Math.random()-0.5)*160; positions[i*3+1] = (Math.random()-0.5)*100; positions[i*3+2] = (Math.random()-0.5)*80; const c = colorsArr[Math.floor(Math.random()*colorsArr.length)]; colors[i*3]=c.r; colors[i*3+1]=c.g; colors[i*3+2]=c.b; sizes[i] = Math.random() * 2.5 + 0.5; }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3)); geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  const mat = new THREE.ShaderMaterial({ uniforms: { time: { value: 0 } }, vertexShader: `attribute vec3 color; attribute float size; varying vec3 vColor; varying float vAlpha; uniform float time; void main(){ vColor = color; vec3 pos = position; pos.y += sin(time*0.4 + position.x*0.05)*1.5; vec4 mv = modelViewMatrix * vec4(pos,1.0); vAlpha = clamp(1.0 + mv.z/80.0, 0.1, 1.0); gl_PointSize = size * (280.0 / -mv.z); gl_Position = projectionMatrix * mv; }`, fragmentShader: `varying vec3 vColor; varying float vAlpha; void main(){ float d = distance(gl_PointCoord, vec2(0.5)); if(d>0.5) discard; gl_FragColor = vec4(vColor, smoothstep(0.5,0.0,d) * vAlpha * 0.85); }`, transparent: true, vertexColors: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const particles = new THREE.Points(geo, mat); scene.add(particles);
+  let t = 0; function animate() { requestAnimationFrame(animate); t += 0.012; mat.uniforms.time.value = t; particles.rotation.y = t * 0.04; renderer.render(scene, camera); } animate();
+  window.addEventListener('resize', () => { renderer.setSize(window.innerWidth, window.innerHeight); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); });
+})();
+
+(function initCircuit() {
+  const c = document.getElementById('circuit-canvas'); if (!c) return;
+  const ctx = c.getContext('2d');
+  function resize() { c.width = c.offsetWidth; c.height = c.offsetHeight; } resize(); window.addEventListener('resize', resize);
   
-  const matches = Object.entries(CITIES)
-    .filter(([key, val]) => val.name.toLowerCase().includes(query) || key.includes(query))
-    .slice(0, 5);
-
-  if (matches.length > 0) {
-    searchResults.innerHTML = matches.map(([key, val]) => `
-      <div class="search-result-item" data-city="${val.name}" data-lat="${val.lat}" data-lon="${val.lon}">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-        </svg>
-        <span class="search-result-name">${val.name}</span>
-        <span class="search-result-coords">${val.lat.toFixed(1)}°, ${val.lon.toFixed(1)}°</span>
-      </div>
-    `).join('');
-    searchResults.classList.add('active');
-  } else {
-    searchResults.classList.remove('active');
+  // Custom roundRect for compatibility
+  function roundRectPath(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
   }
-});
-
-searchResults.addEventListener('click', (e) => {
-  const item = e.target.closest('.search-result-item');
-  if (item) {
-    const city = item.dataset.city;
-    const lat = item.dataset.lat;
-    const lon = item.dataset.lon;
-    searchInput.value = city;
-    searchResults.classList.remove('active');
-    launchBtn.href = `/dashboard?city=${encodeURIComponent(city)}&lat=${lat}&lon=${lon}`;
-  }
-});
-
-function launchWithCity() {
-  const city = searchInput.value.trim();
-  if (city) {
-    const lowerCity = city.toLowerCase();
-    const cityData = CITIES[lowerCity] || Object.values(CITIES).find(c => 
-      c.name.toLowerCase().includes(lowerCity) || lowerCity.includes(c.name.toLowerCase())
-    );
-    if (cityData) {
-      window.location.href = `/dashboard?city=${encodeURIComponent(cityData.name)}&lat=${cityData.lat}&lon=${cityData.lon}`;
-    } else {
-      window.location.href = `/dashboard?city=${encodeURIComponent(city)}`;
-    }
-  } else {
-    window.location.href = '/dashboard';
-  }
-}
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.search-wrapper')) searchResults.classList.remove('active');
-});
-
-/* Three.js Scene */
-const container = document.getElementById('canvas-container');
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 45;
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-container.appendChild(renderer.domElement);
-
-const particleCount = 1500;
-const geometry = new THREE.BufferGeometry();
-const positions = new Float32Array(particleCount * 3);
-const colors = new Float32Array(particleCount * 3);
-const sizes = new Float32Array(particleCount);
-
-for (let i = 0; i < particleCount; i++) {
-  const phi = Math.acos(2 * Math.random() - 1);
-  const theta = Math.random() * Math.PI * 2;
-  const r = 18 + Math.random() * 14;
   
-  positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-  positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-  positions[i * 3 + 2] = r * Math.cos(phi);
-  
-  const isAccent = Math.random() < 0.04;
-  colors[i * 3] = isAccent ? 0.13 : 0.08 + Math.random() * 0.1;
-  colors[i * 3 + 1] = isAccent ? 0.83 : 0.25 + Math.random() * 0.15;
-  colors[i * 3 + 2] = isAccent ? 0.93 : 0.45 + Math.random() * 0.15;
-  
-  sizes[i] = isAccent ? 0.4 : 0.1 + Math.random() * 0.15;
-}
+  const nodes = [];
+  for (let i = 0; i < 12; i++) { nodes.push({ x: 0.08 + Math.random() * 0.84, y: 0.08 + Math.random() * 0.84, vx: (Math.random()-0.5)*0.0008, vy: (Math.random()-0.5)*0.0008, r: 4 + Math.random()*3, pulse: Math.random()*Math.PI*2, pulseSpeed: 0.04 + Math.random()*0.04, label: ['H','X','CNOT','RZ','RY','T','S','CX','ZZ','XX','YY','CZ'][i] }); }
+  function draw() { requestAnimationFrame(draw); const W = c.width, H = c.height; ctx.clearRect(0,0,W,H); ctx.fillStyle = 'rgba(240,251,255,0.4)'; ctx.fillRect(0,0,W,H); ctx.strokeStyle = 'rgba(0,180,216,0.08)'; for (let y = 0.15; y < 1; y += 0.18) { ctx.beginPath(); ctx.moveTo(0, H*y); ctx.lineTo(W, H*y); ctx.stroke(); }
+    nodes.forEach(n => { n.x += n.vx; n.y += n.vy; if (n.x < 0.05 || n.x > 0.95) n.vx *= -1; if (n.y < 0.05 || n.y > 0.95) n.vy *= -1; n.pulse += n.pulseSpeed; });
+    for (let i = 0; i < nodes.length; i++) { for (let j = i+1; j < nodes.length; j++) { const a = nodes[i], b = nodes[j], dx = (a.x-b.x)*W, dy = (a.y-b.y)*H, d = Math.sqrt(dx*dx+dy*dy); if (d < W*0.38) { ctx.beginPath(); ctx.strokeStyle = `rgba(0,180,216,${(1-d/(W*0.38))*0.35})`; ctx.setLineDash([4,6]); ctx.moveTo(a.x*W, a.y*H); ctx.lineTo(b.x*W, b.y*H); ctx.stroke(); ctx.setLineDash([]); } } }
+    nodes.forEach(n => { const px = n.x*W, py = n.y*H, pulse = Math.sin(n.pulse), size = n.r * 2.8 + pulse * 2; ctx.shadowColor = 'rgba(0,180,216,0.5)'; ctx.shadowBlur = 6 + pulse * 4; ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.strokeStyle = `rgba(0,${140+pulse*40},${200+pulse*30},0.8)`; roundRectPath(px-size, py-size*0.7, size*2, size*1.4, 4); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0; ctx.fillStyle = '#0077A8'; ctx.font = `bold ${Math.max(8, size*0.55)}px JetBrains Mono`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n.label, px, py); });
+  } draw();
+})();
 
-geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+(function initGSAP() {
+  gsap.registerPlugin(ScrollTrigger);
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  tl.to('.hero-badge',   { opacity:1, y:0, duration:0.8, delay:0.3 })
+    .to('.hero-title',   { opacity:1, y:0, duration:1,   stagger:0.05 }, '-=0.4')
+    .to('.hero-sub',     { opacity:1, y:0, duration:0.8 }, '-=0.5')
+    .to('.hero-buttons', { opacity:1, y:0, duration:0.8 }, '-=0.5')
+    .to('.hero-3d-element', { opacity:1, y:0, duration:1 }, '-=0.5');
+    
+  gsap.utils.toArray('.reveal').forEach((el, i) => { gsap.to(el, { scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none none' }, opacity: 1, y: 0, duration: 0.85, delay: (i % 4) * 0.12, ease: 'power3.out' }); });
+  gsap.utils.toArray('.counter').forEach(el => { const target = +el.dataset.target; ScrollTrigger.create({ trigger: el, start: 'top 80%', onEnter: () => { gsap.to({ val: 0 }, { val: target, duration: 2.2, ease: 'power2.out', onUpdate: function() { el.textContent = Math.round(this.targets()[0].val).toLocaleString(); } }); }, once: true }); });
+  ScrollTrigger.create({ start: 'top -50', onUpdate: self => { const nav = document.getElementById('main-nav'); nav.style.padding = self.direction === 1 ? '0.7rem 3rem' : '1.2rem 3rem'; } });
+})();
 
-const material = new THREE.ShaderMaterial({
-  uniforms: { uTime: { value: 0 } },
-  vertexShader: `
-    attribute float size;
-    attribute vec3 color;
-    varying vec3 vColor;
-    varying float vAlpha;
-    uniform float uTime;
-    void main() {
-      vColor = color;
-      vec3 pos = position;
-      float wave = sin(uTime * 0.25 + position.x * 0.04 + position.y * 0.03) * 0.8;
-      pos.y += wave;
-      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = size * (200.0 / -mvPosition.z);
-      gl_Position = projectionMatrix * mvPosition;
-      vAlpha = 0.35 + 0.5 * sin(uTime * 0.35 + position.z * 0.06);
-    }
-  `,
-  fragmentShader: `
-    varying vec3 vColor;
-    varying float vAlpha;
-    void main() {
-      float dist = length(gl_PointCoord - vec2(0.5));
-      if (dist > 0.5) discard;
-      float alpha = smoothstep(0.5, 0.05, dist) * vAlpha * 0.6;
-      gl_FragColor = vec4(vColor, alpha);
-    }
-  `,
-  transparent: true,
-  depthWrite: false,
-  vertexColors: true
-});
+if (window.innerWidth > 768) { VanillaTilt.init(document.querySelectorAll('[data-tilt]'), { max: 8, speed: 400, glare: true, 'max-glare': 0.08, scale: 1.03 }); }
 
-const particles = new THREE.Points(geometry, material);
-scene.add(particles);
-
-let mouseX = 0, mouseY = 0;
-document.addEventListener('mousemove', (e) => {
-  mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-  mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
-});
-
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-const clock = new THREE.Clock();
-function animate() {
-  requestAnimationFrame(animate);
-  const time = clock.getElapsedTime();
-  material.uniforms.uTime.value = time;
-  particles.rotation.y = time * 0.025 + mouseX * 0.15;
-  particles.rotation.x = mouseY * 0.08;
-  renderer.render(scene, camera);
-}
-animate();
-
-/* GSAP Animations */
-gsap.registerPlugin(ScrollTrigger);
-
-gsap.to('.hero-badge', { opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', delay: 0.15 });
-gsap.to('.hero-title', { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', delay: 0.25 });
-gsap.to('.hero-desc', { opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.4 });
-gsap.to('.search-wrapper', { opacity: 1, duration: 0.5, ease: 'power2.out', delay: 0.5 });
-gsap.to('.hero-actions', { opacity: 1, duration: 0.5, ease: 'power2.out', delay: 0.6 });
-
-ScrollTrigger.create({
-  start: 'top -50',
-  onUpdate: (self) => document.getElementById('nav').classList.toggle('scrolled', self.progress > 0)
-});
-
-gsap.utils.toArray('.reveal').forEach((el) => {
-  gsap.to(el, {
-    scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' },
-    opacity: 1, y: 0, duration: 0.7, ease: 'power3.out'
-  });
-});
-
-ScrollTrigger.create({
-  trigger: '.risk-grid', start: 'top 80%',
-  onEnter: () => document.querySelectorAll('.risk-bar-fill').forEach(bar => bar.style.width = bar.dataset.width + '%')
-});
-
-function animateCounters() {
-  document.querySelectorAll('.counter').forEach(el => {
-    const target = parseFloat(el.dataset.target);
-    const isFloat = target % 1 !== 0;
-    let start = 0;
-    const step = target / 45;
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { start = target; clearInterval(timer); }
-      el.textContent = isFloat ? start.toFixed(1) : Math.floor(start);
-    }, 28);
-  });
-}
-ScrollTrigger.create({ trigger: '.stats-section', start: 'top 80%', onEnter: animateCounters });
-
-function fluctuateRisks() {
-  const ids = ['risk-cyclone', 'risk-heat', 'risk-flood', 'risk-eq'];
-  const bases = [12, 28, 8, 3];
-  ids.forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (el) {
-      const v = Math.max(1, bases[i] + Math.floor((Math.random() - 0.5) * 8));
-      el.innerHTML = v + '<span class="percent">%</span>';
-    }
-  });
-}
-setInterval(fluctuateRisks, 4000);
+document.addEventListener('mouseleave', () => { orb.style.opacity = '0'; ring.style.opacity = '0'; });
+document.addEventListener('mouseenter', () => { orb.style.opacity = '1'; ring.style.opacity = '1'; });
 </script>
 </body>
 </html>

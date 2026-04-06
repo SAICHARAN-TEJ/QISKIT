@@ -433,6 +433,8 @@ class QuantumSVM(BaseQuantumClassifier):
         y = np.array(y, dtype=np.int32)
         
         self._classes = np.unique(y)
+        if len(self._classes) < 2:
+            raise ValueError("QuantumSVM requires at least 2 classes")
         y_binary = (y == self._classes[1]).astype(float) * 2 - 1
         
         self._support_vectors = X.copy()

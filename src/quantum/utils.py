@@ -237,7 +237,7 @@ class CircuitVisualizer:
         num_qubits = config.get('num_qubits', 4)
         
         for q in range(num_qubits):
-            lines.append(f"q{q}: ────", end="")
+            lines.append(f"q{q}: ────")
             
         lines.append("")
         

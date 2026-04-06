@@ -1,264 +1,648 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | QiskitML</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/design.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumRes | Disaster Response AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --c-bg: #F0FBFF; --c-bg2: #E8F8FF; --c-surface: rgba(255,255,255,0.72);
+  --c-glass: rgba(255,255,255,0.55); --c-border: rgba(160,210,230,0.35);
+  --c-primary: #00B4D8; --c-primary-d: #0077A8; --c-accent: #48CAE4;
+  --c-silver: #B8D8E8; --c-text: #0A2540; --c-muted: #4A7090;
+  --font-display: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1); --ease-out: cubic-bezier(0.16,1,0.3,1);
+  --r-sm: 8px; --r-md: 16px; --r-lg: 24px; --r-xl: 40px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--c-bg); color: var(--c-text); font-family: var(--font-body); overflow-x: hidden; }
+
+#cursor-orb { position: fixed; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, var(--c-accent)); box-shadow: 0 0 18px 6px rgba(0,180,216,0.55), 0 0 40px 12px rgba(0,180,216,0.2); pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: multiply; }
+#cursor-ring { position: fixed; width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid rgba(0,180,216,0.55); pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); }
+body.cursor-hover #cursor-orb { width: 38px; height: 38px; box-shadow: 0 0 30px 12px rgba(0,180,216,0.7); }
+body.cursor-hover #cursor-ring { width: 72px; height: 72px; border-color: rgba(0,180,216,0.9); }
+#trail-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9997; }
+#bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 3rem; background: rgba(240,251,255,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--c-border); }
+.nav-logo { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--c-primary-d); display: flex; align-items: center; gap: 0.6rem; }
+.nav-logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--c-primary), var(--c-accent)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #fff; }
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a { font-size: 0.875rem; font-weight: 500; color: var(--c-muted); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--c-primary); }
+.nav-cta { background: var(--c-primary); color: #fff; padding: 0.5rem 1.25rem; border-radius: var(--r-xl); font-size: 0.875rem; font-weight: 600; text-decoration: none; }
+.nav-cta:hover { background: var(--c-primary-d); box-shadow: 0 4px 20px rgba(0,120,168,0.35); }
+
+main { position: relative; z-index: 1; padding-top: 80px; }
+
+.hero-mini { padding: 2rem 3rem; background: linear-gradient(180deg, var(--c-bg) 0%, rgba(0,180,216,0.03) 100%); border-bottom: 1px solid var(--c-border); }
+.hero-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
+.hero-text h1 { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: var(--c-text); }
+.hero-text p { color: var(--c-muted); font-size: 0.95rem; margin-top: 0.25rem; }
+.hero-controls { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.input-group { flex: 1; min-width: 200px; max-width: 300px; }
+.glass-input { width: 100%; padding: 0.75rem 1.25rem; background: var(--c-glass); border: 1px solid var(--c-border); border-radius: var(--r-xl); font-family: var(--font-body); font-size: 0.9rem; outline: none; transition: all 0.3s; }
+.glass-input:focus { border-color: var(--c-primary); box-shadow: 0 0 20px rgba(0,180,216,0.15); }
+
+.btn-analyze { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--c-primary), var(--c-primary-d)); color: #fff; border: none; border-radius: var(--r-xl); font-weight: 600; cursor: pointer; transition: all 0.3s var(--ease-spring); }
+.btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,120,168,0.4); }
+
+.btn-calamity { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.4); border-radius: var(--r-xl); color: #f59e0b; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.btn-calamity:hover, .btn-calamity.active { background: rgba(245,158,11,0.25); box-shadow: 0 0 25px rgba(245,158,11,0.3); }
+.btn-calamity.active { border-color: #f59e0b; }
+
+.btn-location { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--c-glass); border: 1px solid var(--c-border); border-radius: var(--r-xl); color: var(--c-muted); font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.btn-location:hover { background: var(--c-primary); color: #fff; border-color: transparent; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; max-width: 1400px; margin: 0 auto; padding: 2rem; }
+.panel { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: 1.5rem; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,100,150,0.08); }
+
+.risk-panel { grid-column: span 3; }
+.risk-gauge { position: relative; width: 100%; height: 160px; display: flex; align-items: center; justify-content: center; }
+.gauge-arc { position: absolute; bottom: 20px; left: 50%; width: 160px; height: 80px; border-radius: 80px 80px 0 0; background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444); overflow: hidden; transform: translateX(-50%); }
+.gauge-arc::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 60px; background: var(--c-surface); border-radius: 60px 60px 0 0; }
+.gauge-needle { position: absolute; bottom: 20px; left: 50%; width: 4px; height: 60px; background: var(--c-primary); transform-origin: bottom center; transform: translateX(-50%) rotate(-90deg); transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 2px; box-shadow: 0 0 10px var(--c-primary); z-index: 2; }
+.gauge-center { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; background: var(--c-primary); border-radius: 50%; z-index: 3; box-shadow: 0 0 8px var(--c-primary); }
+.gauge-value { position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; z-index: 4; }
+.risk-info { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
+.risk-block { text-align: center; padding: 0.5rem; background: var(--c-bg2); border-radius: var(--r-md); }
+.risk-block-label { font-size: 0.65rem; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.risk-block-value { font-size: 0.9rem; font-weight: 700; margin-top: 0.25rem; }
+
+.sensor-panel { grid-column: span 3; }
+.sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.sensor-item { padding: 0.75rem; background: var(--c-bg2); border-radius: var(--r-md); text-align: center; }
+.sensor-value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--c-primary); }
+.sensor-label { font-size: 0.7rem; color: var(--c-muted); margin-top: 0.2rem; }
+
+.status-panel { grid-column: span 3; }
+.status-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.status-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.75rem; background: var(--c-bg2); border-radius: var(--r-md); }
+.status-label { font-size: 0.8rem; color: var(--c-muted); }
+.status-pill { padding: 0.2rem 0.6rem; border-radius: var(--r-xl); font-size: 0.7rem; font-weight: 600; }
+.pill-success { background: rgba(16,185,129,0.15); color: #10b981; }
+.pill-warning { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.pill-danger { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+.map-panel { grid-column: span 6; height: 400px; }
+.map-container { width: 100%; height: 100%; border-radius: var(--r-md); overflow: hidden; background: #fff; }
+#mapDiv { width: 100%; height: 100%; }
+
+.route-panel { grid-column: span 6; }
+.route-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.route-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; }
+.route-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 320px; overflow-y: auto; }
+.route-option { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: var(--c-bg2); border-radius: var(--r-md); cursor: pointer; transition: all 0.3s; border: 2px solid transparent; }
+.route-option:hover { background: rgba(0,180,216,0.1); }
+.route-option.optimal { border-color: var(--c-primary); background: rgba(0,180,216,0.08); }
+.route-zone { font-weight: 700; color: var(--c-primary); font-size: 0.9rem; }
+.route-distance { color: var(--c-muted); font-size: 0.8rem; }
+.route-score { font-family: var(--font-mono); font-weight: 600; color: var(--c-accent); font-size: 0.85rem; }
+
+.loading-overlay { position: fixed; inset: 0; background: rgba(240,251,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+.loading-overlay.active { opacity: 1; pointer-events: all; }
+.quantum-loader { width: 60px; height: 60px; position: relative; }
+.quantum-loader::before, .quantum-loader::after { content: ''; position: absolute; border-radius: 50%; animation: orbit 2s linear infinite; }
+.quantum-loader::before { width: 15px; height: 15px; background: var(--c-primary); top: 0; left: 50%; transform: translateX(-50%); }
+.quantum-loader::after { width: 45px; height: 45px; border: 2px solid var(--c-accent); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-direction: reverse; }
+@keyframes orbit { 0% { transform: translateX(-50%) rotate(0deg); } 100% { transform: translateX(-50%) rotate(360deg); } }
+.loading-text { margin-top: 1rem; color: var(--c-muted); font-family: var(--font-mono); font-size: 0.85rem; }
+
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--c-surface); border: 1px solid var(--c-primary); padding: 0.75rem 1.25rem; border-radius: var(--r-md); box-shadow: 0 10px 40px rgba(0,0,0,0.1); opacity: 0; transition: all 0.4s var(--ease-out); z-index: 1001; font-size: 0.9rem; font-weight: 500; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+.disaster-badge { display: inline-block; padding: 0.2rem 0.5rem; border-radius: var(--r-xl); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.disaster-cyclone { background: rgba(139,47,255,0.15); color: #8b2fff; }
+.disaster-flood { background: rgba(6,182,212,0.15); color: #06b6d4; }
+.disaster-heat_wave { background: rgba(239,68,68,0.15); color: #ef4444; }
+.disaster-blizzard { background: rgba(100,116,139,0.15); color: #64748b; }
+.disaster-earthquake { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.disaster-normal { background: rgba(16,185,129,0.15); color: #10b981; }
+
+@media (max-width: 1200px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } .risk-panel, .sensor-panel, .status-panel { grid-column: span 1; } .map-panel, .route-panel { grid-column: span 2; } }
+@media (max-width: 768px) { nav { padding: 1rem 1.5rem; } .nav-links, .nav-cta { display: none; } .dashboard-grid { grid-template-columns: 1fr; padding: 1rem; } .risk-panel, .sensor-panel, .status-panel, .map-panel, .route-panel { grid-column: span 1; } .hero-controls { flex-direction: column; } .input-group { max-width: 100%; } }
+</style>
 </head>
-
 <body>
-    <div class="app-background"></div>
 
-    <div class="main-layout">
+<div id="cursor-orb"></div>
+<div id="cursor-ring"></div>
+<canvas id="trail-canvas"></canvas>
+<canvas id="bg-canvas"></canvas>
 
-        <nav class="nav-sidebar">
-            <div class="nav-logo">
-                <div class="nav-logo-icon quantum-glow">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v4M12 19v4"/>
-                    </svg>
-                </div>
-                <span class="nav-logo-text">QiskitML</span>
-            </div>
+<nav>
+  <div class="nav-logo"><div class="nav-logo-icon">Q</div>QuantumRes</div>
+  <ul class="nav-links">
+    <li><a href="/">Home</a></li>
+    <li><a href="/dashboard">Dashboard</a></li>
+    <li><a href="#mapPanel">Map</a></li>
+    <li><a href="#routes">Routes</a></li>
+  </ul>
+  <a href="https://github.com/SAICHARAN-TEJ/QISKIT" target="_blank" class="nav-cta">View on GitHub</a>
+</nav>
 
-            <div class="nav-user">
-                <div class="user-avatar">{{ username[0]|upper if username else 'Q' }}</div>
-                <div class="user-info">
-                    <span class="user-name">{{ username or 'Quantum User' }}</span>
-                    <span class="user-status">
-                        <span class="status-led online"></span>
-                        Quantum Active
-                    </span>
-                </div>
-            </div>
+<main>
+  <section class="hero-mini">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>Disaster Response Dashboard</h1>
+        <p>Real-time quantum-optimized evacuation routing</p>
+      </div>
+      <div class="hero-controls">
+        <div class="input-group">
+          <input type="text" class="glass-input" id="cityInput" placeholder="Enter city name..." value="Chennai">
+        </div>
+        <button class="btn-analyze" onclick="runPrediction()">ANALYZE</button>
+        <button class="btn-calamity" id="calamityToggle" onclick="toggleCalamityMode()">
+          <span>SIMULATE</span> <span id="calamityLabel">CALAMITY</span>
+        </button>
+        <button class="btn-location" id="locationBtn" onclick="getUserLocation()">LOCATE</button>
+      </div>
+    </div>
+  </section>
 
-            <div class="nav-menu">
-                <a href="#" class="nav-item active" id="navDashboard">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="3" width="7" height="7" />
-                            <rect x="14" y="3" width="7" height="7" />
-                            <rect x="14" y="14" width="7" height="7" />
-                            <rect x="3" y="14" width="7" height="7" />
-                        </svg>
-                    </span>
-                    Dashboard
-                </a>
-                <a href="#quantum" class="nav-item" id="navQuantum">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="3"/>
-                            <path d="M12 1v4M12 19v4"/>
-                        </svg>
-                    </span>
-                    Quantum Stats
-                </a>
-                <a href="#alerts" class="nav-item" id="navAlerts">
-                    <span class="nav-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 01-3.46 0" />
-                        </svg>
-                    </span>
-                    Alerts
-                </a>
-            </div>
-        </nav>
-
-        <main class="content-area">
-            <header class="page-header">
-                <div class="header-content">
-                    <div>
-                        <h1 class="page-title">Quantum ML Command Center</h1>
-                        <p class="page-subtitle">Disaster prediction powered by IBM Qiskit</p>
-                    </div>
-                    <div class="header-actions">
-                        <div class="header-status" id="systemStatus">
-                            <span class="status-led online"></span>
-                            <span>Quantum Backend Active</span>
-                        </div>
-                        <button class="btn-glass btn-primary-glass" id="analyzeBtn" onclick="runPrediction()">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M12 1v4M12 19v4"/>
-                            </svg>
-                            Analyze
-                        </button>
-                    </div>
-                </div>
-                <div class="predict-bar glass-panel">
-                    <label class="form-label" for="cityInput">Location</label>
-                    <input type="text" class="glass-input" id="cityInput" placeholder="Enter city name…" value="Chennai">
-                </div>
-            </header>
-
-            <div class="dashboard-grid" id="mainGrid">
-
-                <div class="glass-card dash-card p-6" id="riskCard">
-                    <div class="card-label">Risk Assessment</div>
-                    <div class="gauge-container">
-                        <div class="analog-gauge">
-                            <div class="gauge-ring"></div>
-                            <div class="gauge-inner">
-                                <span class="gauge-value" id="gaugeValue">--</span>
-                                <span class="gauge-label">Risk</span>
-                            </div>
-                            <div class="gauge-needle" id="gaugeNeedle"></div>
-                            <div class="gauge-center-dot"></div>
-                        </div>
-                    </div>
-                    <div class="risk-info">
-                        <div class="risk-block">
-                            <span class="risk-block-label">Disaster Type</span>
-                            <span class="risk-block-value" id="disasterType">--</span>
-                        </div>
-                        <div class="risk-block">
-                            <span class="risk-block-label">Evacuation</span>
-                            <span class="risk-block-value" id="evacNeeded">--</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-card dash-card p-6" id="quantumCard">
-                    <div class="card-label">Quantum Metrics</div>
-                    <div class="quantum-metrics-grid">
-                        <div class="quantum-metric">
-                            <span class="metric-value" id="entropyValue">--</span>
-                            <span class="metric-label">Entropy</span>
-                        </div>
-                        <div class="quantum-metric">
-                            <span class="metric-value" id="purityValue">--</span>
-                            <span class="metric-label">Purity</span>
-                        </div>
-                        <div class="quantum-metric">
-                            <span class="metric-value" id="advantageValue">--</span>
-                            <span class="metric-label">Advantage</span>
-                        </div>
-                        <div class="quantum-metric">
-                            <span class="metric-value" id="qubitsValue">4</span>
-                            <span class="metric-label">Qubits</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-card dash-card p-6" id="sensorCard">
-                    <div class="card-label">Sensor Readings</div>
-                    <div class="sensor-grid">
-                        <div class="sensor-item">
-                            <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z" />
-                                </svg>
-                            </div>
-                            <span class="sensor-value" id="tempValue">--</span>
-                            <span class="sensor-label">Temperature</span>
-                        </div>
-                        <div class="sensor-item">
-                            <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M12 6v6l4 2" />
-                                </svg>
-                            </div>
-                            <span class="sensor-value" id="pressureValue">--</span>
-                            <span class="sensor-label">Pressure</span>
-                        </div>
-                        <div class="sensor-item">
-                            <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z" />
-                                </svg>
-                            </div>
-                            <span class="sensor-value" id="humidityValue">--</span>
-                            <span class="sensor-label">Humidity</span>
-                        </div>
-                        <div class="sensor-item">
-                            <div class="sensor-icon">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2" />
-                                </svg>
-                            </div>
-                            <span class="sensor-value" id="windValue">--</span>
-                            <span class="sensor-label">Wind</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="glass-card dash-card p-6 map-card quantum-border" id="mapCard">
-                    <div class="card-label">Location Map</div>
-                    <div id="map" class="map-container quantum-inner"></div>
-                </div>
-
-                <div class="glass-card dash-card p-6" id="routeCard" style="display:none;">
-                    <div class="card-label">Evacuation Route</div>
-                    <div class="route-list">
-                        <div class="route-row">
-                            <span class="route-key">Destination</span>
-                            <span class="route-val" id="routeDest">--</span>
-                        </div>
-                        <div class="route-row">
-                            <span class="route-key">Distance</span>
-                            <span class="route-val" id="routeDist">--</span>
-                        </div>
-                        <div class="route-row">
-                            <span class="route-key">Route Type</span>
-                            <span class="route-val" id="routeType">--</span>
-                        </div>
-                    </div>
-                    <button class="btn-glass btn-primary-glass w-full mt-4" id="sendAlertsBtn" onclick="sendAlerts()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                        </svg>
-                        Send Alerts
-                    </button>
-                </div>
-
-                <div class="glass-card dash-card p-6" id="statusCard">
-                    <div class="card-label">System Status</div>
-                    <div class="status-list">
-                        <div class="status-row">
-                            <span class="status-key">Quantum ML</span>
-                            <span class="status-pill pill-success" id="quantumStatus">Connected</span>
-                        </div>
-                        <div class="status-row">
-                            <span class="status-key">Backend</span>
-                            <span class="status-pill pill-success">Qiskit</span>
-                        </div>
-                        <div class="status-row">
-                            <span class="status-key">Last Update</span>
-                            <span class="status-val" id="lastUpdate">--</span>
-                        </div>
-                        <div class="status-row">
-                            <span class="status-key">Risk Level</span>
-                            <span class="status-val" id="riskLevelBadge">--</span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="load-overlay" id="loadOverlay" style="display:none;">
-                <div class="load-spinner quantum-spinner"></div>
-                <p>Quantum Analysis Running...</p>
-            </div>
-
-            <div class="toast" id="toast"></div>
-
-        </main>
+  <div class="dashboard-grid">
+    <div class="panel risk-panel">
+      <h3 style="font-family:var(--font-display);font-size:0.75rem;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;">Risk Assessment</h3>
+      <div class="risk-gauge">
+        <div class="gauge-arc"></div>
+        <div class="gauge-center"></div>
+        <div class="gauge-needle" id="gaugeNeedle"></div>
+        <div class="gauge-value"><span id="gaugeValue">0</span>%</div>
+      </div>
+      <div class="risk-info">
+        <div class="risk-block">
+          <div class="risk-block-label">Disaster</div>
+          <div class="risk-block-value"><span class="disaster-badge" id="disasterType">--</span></div>
+        </div>
+        <div class="risk-block">
+          <div class="risk-block-label">Evacuation</div>
+          <div class="risk-block-value" id="evacNeeded">--</div>
+        </div>
+      </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
-</body>
+    <div class="panel sensor-panel">
+      <h3 style="font-family:var(--font-display);font-size:0.75rem;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;">Sensor Readings</h3>
+      <div class="sensor-grid">
+        <div class="sensor-item"><div class="sensor-value" id="tempValue">--</div><div class="sensor-label">Temp C</div></div>
+        <div class="sensor-item"><div class="sensor-value" id="pressureValue">--</div><div class="sensor-label">hPa</div></div>
+        <div class="sensor-item"><div class="sensor-value" id="humidityValue">--</div><div class="sensor-label">Humidity</div></div>
+        <div class="sensor-item"><div class="sensor-value" id="windValue">--</div><div class="sensor-label">Wind m/s</div></div>
+      </div>
+    </div>
 
+    <div class="panel status-panel">
+      <h3 style="font-family:var(--font-display);font-size:0.75rem;color:var(--c-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;">System Status</h3>
+      <div class="status-list">
+        <div class="status-item"><span class="status-label">Quantum ML</span><span class="status-pill pill-success" id="quantumStatus">Active</span></div>
+        <div class="status-item"><span class="status-label">Last Update</span><span id="lastUpdate" style="font-size:0.8rem">--</span></div>
+        <div class="status-item"><span class="status-label">Risk Level</span><span class="status-pill" id="riskLevelBadge">--</span></div>
+        <div class="status-item"><span class="status-label">Mode</span><span id="modeStatus" style="font-size:0.8rem">Real-time</span></div>
+      </div>
+    </div>
+
+    <div class="panel map-panel" id="mapPanel">
+      <div class="map-container">
+        <div id="mapDiv"></div>
+      </div>
+    </div>
+
+    <div class="panel route-panel" id="routes">
+      <div class="route-header"><h3 class="route-title">Evacuation Routes (Quantum Optimized)</h3></div>
+      <div class="route-list" id="allRoutes">
+        <p style="color:var(--c-muted);text-align:center;padding:2rem;font-size:0.9rem;">Click ANALYZE to see routes</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="loading-overlay" id="loadOverlay">
+  <div class="quantum-loader"></div>
+  <p class="loading-text">Quantum Analysis Running...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// Cursor animation
+const orb = document.getElementById('cursor-orb'), ring = document.getElementById('cursor-ring');
+const trailCanvas = document.getElementById('trail-canvas'), ctx2d = trailCanvas.getContext('2d');
+let mx = window.innerWidth/2, my = window.innerHeight/2, orbX = mx, orbY = my, ringX = mx, ringY = my;
+const trail = [];
+
+function resizeTrail() { trailCanvas.width = window.innerWidth; trailCanvas.height = window.innerHeight; }
+resizeTrail(); window.addEventListener('resize', resizeTrail);
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; trail.push({x: mx, y: my, life: 1}); if (trail.length > 40) trail.shift(); });
+document.querySelectorAll('.btn-analyze, .btn-calamity, .btn-location').forEach(el => { el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover')); el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover')); });
+
+function animateCursor() {
+  orbX += (mx - orbX) * 0.18; orbY += (my - orbY) * 0.18; orb.style.left = orbX + 'px'; orb.style.top = orbY + 'px';
+  ringX += (mx - ringX) * 0.1; ringY += (my - ringY) * 0.1; ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px';
+  ctx2d.clearRect(0, 0, trailCanvas.width, trailCanvas.height);
+  trail.forEach(p => { p.life -= 0.04; if (p.life <= 0) return; ctx2d.beginPath(); ctx2d.arc(p.x, p.y, p.life * 4, 0, Math.PI * 2); ctx2d.fillStyle = `rgba(0,180,216,${p.life * 0.5})`; ctx2d.fill(); });
+  requestAnimationFrame(animateCursor);
+} animateCursor();
+
+// 3D Background with Three.js
+(function initThree() {
+  const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
+  
+  try {
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+    renderer.setSize(window.innerWidth, window.innerHeight); 
+    renderer.setClearColor(0x000000, 0);
+    
+    const scene = new THREE.Scene(); 
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000); 
+    camera.position.z = 80;
+    scene.fog = new THREE.FogExp2(0xE8F8FF, 0.008);
+    
+    const PARTICLE_COUNT = 180;
+    const positions = new Float32Array(PARTICLE_COUNT * 3);
+    const colors = new Float32Array(PARTICLE_COUNT * 3);
+    const sizes = new Float32Array(PARTICLE_COUNT);
+    
+    const colorsArr = [new THREE.Color(0x00B4D8), new THREE.Color(0x48CAE4), new THREE.Color(0x90E0EF), new THREE.Color(0xADE8F4)];
+    
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      positions[i*3] = (Math.random()-0.5)*160;
+      positions[i*3+1] = (Math.random()-0.5)*100;
+      positions[i*3+2] = (Math.random()-0.5)*80;
+      const c = colorsArr[Math.floor(Math.random()*colorsArr.length)];
+      colors[i*3]=c.r;
+      colors[i*3+1]=c.g;
+      colors[i*3+2]=c.b;
+      sizes[i] = Math.random() * 2 + 0.3;
+    }
+    
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    
+    const vertexShader = `
+      attribute vec3 color;
+      attribute float size;
+      varying vec3 vColor;
+      varying float vAlpha;
+      uniform float time;
+      void main() {
+        vColor = color;
+        vec3 pos = position;
+        pos.y += sin(time*0.4 + position.x*0.05)*1.5;
+        vec4 mv = modelViewMatrix * vec4(pos,1.0);
+        vAlpha = clamp(1.0 + mv.z/80.0, 0.1, 1.0);
+        gl_PointSize = size * (250.0 / -mv.z);
+        gl_Position = projectionMatrix * mv;
+      }
+    `;
+    
+    const fragmentShader = `
+      varying vec3 vColor;
+      varying float vAlpha;
+      void main() {
+        float d = distance(gl_PointCoord, vec2(0.5));
+        if(d>0.5) discard;
+        gl_FragColor = vec4(vColor, smoothstep(0.5,0.0,d) * vAlpha * 0.8);
+      }
+    `;
+    
+    const mat = new THREE.ShaderMaterial({ 
+      uniforms: { time: { value: 0 } }, 
+      vertexShader: vertexShader, 
+      fragmentShader: fragmentShader, 
+      transparent: true, 
+      vertexColors: true, 
+      depthWrite: false, 
+      blending: THREE.AdditiveBlending 
+    });
+    
+    const particles = new THREE.Points(geo, mat); 
+    scene.add(particles);
+    
+    let t = 0; 
+    function animate() { 
+      requestAnimationFrame(animate); 
+      t += 0.012; 
+      mat.uniforms.time.value = t; 
+      particles.rotation.y = t * 0.04; 
+      renderer.render(scene, camera); 
+    } 
+    animate();
+    
+    window.addEventListener('resize', () => { 
+      renderer.setSize(window.innerWidth, window.innerHeight); 
+      camera.aspect = window.innerWidth / window.innerHeight; 
+      camera.updateProjectionMatrix(); 
+    });
+  } catch(e) {
+    console.log('Three.js init error:', e);
+  }
+})();
+
+// App state
+let map = null, currentMarker = null, disasterMarker = null, routeLine = null, calamityMode = false, currentPrediction = null, userLat = null, userLon = null;
+
+// Toast notification
+function showToast(msg) { 
+  const toast = document.getElementById('toast'); 
+  toast.textContent = msg; 
+  toast.classList.add('show'); 
+  setTimeout(() => toast.classList.remove('show'), 3000); 
+}
+
+// Calamity mode toggle
+function toggleCalamityMode() { 
+  calamityMode = !calamityMode; 
+  const btn = document.getElementById('calamityToggle'); 
+  const label = document.getElementById('calamityLabel'); 
+  const modeStatus = document.getElementById('modeStatus'); 
+  if (calamityMode) { 
+    btn.classList.add('active'); 
+    label.textContent = 'LIVE'; 
+    modeStatus.textContent = 'Simulation'; 
+    showToast('Calamity Mode - Evacuation routes activated'); 
+  } else { 
+    btn.classList.remove('active'); 
+    label.textContent = 'CALAMITY'; 
+    modeStatus.textContent = 'Real-time'; 
+  } 
+  runPrediction(); 
+}
+
+// Get user location
+function getUserLocation() { 
+  if (!navigator.geolocation) { 
+    showToast('Geolocation not supported'); 
+    return; 
+  } 
+  const btn = document.getElementById('locationBtn'); 
+  btn.innerHTML = 'WAIT...'; 
+  btn.disabled = true;
+  
+  navigator.geolocation.getCurrentPosition(
+    (position) => { 
+      userLat = position.coords.latitude; 
+      userLon = position.coords.longitude; 
+      document.getElementById('cityInput').value = 'Your Location'; 
+      showToast('Location: ' + userLat.toFixed(4) + ', ' + userLon.toFixed(4)); 
+      btn.innerHTML = 'LOCATE'; 
+      btn.disabled = false;
+      runPrediction(); 
+    }, 
+    (error) => { 
+      showToast('Could not get location: ' + error.message); 
+      btn.innerHTML = 'LOCATE'; 
+      btn.disabled = false;
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  ); 
+}
+
+// Initialize Leaflet map
+function initMap(lat = 13.0827, lon = 80.2707) { 
+  const mapDiv = document.getElementById('mapDiv'); 
+  if (!mapDiv) { 
+    console.log('mapDiv not found'); 
+    return; 
+  }
+  
+  if (map) { 
+    map.setView([lat, lon], 11); 
+    return; 
+  } 
+  
+  try {
+    map = L.map('mapDiv', { zoomControl: true }).setView([lat, lon], 11); 
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { 
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap, CARTO'
+    }).addTo(map);
+    console.log('Map initialized');
+  } catch(e) {
+    console.log('Map init error:', e);
+  }
+}
+
+// Update map with markers
+function updateMap(current, disaster) { 
+  if (!map) { 
+    initMap(current.lat, current.lon); 
+    return; 
+  }
+  
+  try {
+    if (currentMarker) map.removeLayer(currentMarker); 
+    if (disasterMarker) map.removeLayer(disasterMarker); 
+    if (routeLine) map.removeLayer(routeLine); 
+    
+    const colour = getDisasterColour(currentPrediction?.disaster_type || 'normal'); 
+    
+    currentMarker = L.circleMarker([current.lat, current.lon], { 
+      radius: 10, 
+      fillColor: '#00B4D8', 
+      color: '#fff', 
+      weight: 2, 
+      fillOpacity: 1 
+    }).addTo(map).bindPopup('Your Location'); 
+    
+    disasterMarker = L.circleMarker([disaster.lat, disaster.lon], { 
+      radius: 14, 
+      fillColor: colour, 
+      color: '#fff', 
+      weight: 2, 
+      fillOpacity: 0.85 
+    }).addTo(map).bindPopup('Disaster: ' + (currentPrediction?.disaster_type || 'unknown')); 
+    
+    routeLine = L.polyline([[current.lat, current.lon], [disaster.lat, disaster.lon]], { 
+      color: colour, 
+      weight: 3, 
+      opacity: 0.7, 
+      dashArray: '10, 10' 
+    }).addTo(map); 
+    
+    map.fitBounds([[current.lat, current.lon], [disaster.lat, disaster.lon]], { padding: [40, 40] }); 
+  } catch(e) {
+    console.log('Update map error:', e);
+  }
+}
+
+function getDisasterColour(dtype) { 
+  const colours = { 
+    heat_wave: '#ef4444', 
+    cyclone: '#8b2fff', 
+    flood: '#06b6d4', 
+    blizzard: '#64748b', 
+    earthquake: '#f59e0b', 
+    normal: '#10b981' 
+  }; 
+  return colours[dtype] || '#00B4D8'; 
+}
+
+// Update gauge
+function setGauge(value) { 
+  const angle = -90 + (Math.min(100, Math.max(0, value)) / 100) * 180; 
+  const needle = document.getElementById('gaugeNeedle');
+  if (needle) {
+    needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+  }
+  const gaugeValue = document.getElementById('gaugeValue');
+  if (gaugeValue) {
+    gaugeValue.textContent = Math.round(value);
+  }
+}
+
+// Run prediction
+async function runPrediction() { 
+  const cityInput = document.getElementById('cityInput'); 
+  let city = cityInput?.value?.trim() || 'Chennai'; 
+  
+  document.getElementById('loadOverlay').classList.add('active'); 
+  
+  try { 
+    const payload = { city: city, calamity_mode: calamityMode }; 
+    if (userLat !== null && userLon !== null) { 
+      payload.lat = userLat; 
+      payload.lon = userLon; 
+    } 
+    
+    const res = await fetch('/api/predict', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(payload) 
+    }); 
+    
+    const data = await res.json(); 
+    
+    if (data.error) { 
+      showToast('Error: ' + data.error); 
+      return; 
+    } 
+    
+    currentPrediction = data; 
+    updateUI(data); 
+    
+    if (data.evacuation_needed || data.calamity_mode) { 
+      await fetchRoute(data); 
+    } else { 
+      document.getElementById('allRoutes').innerHTML = '<p style="color:var(--c-muted);text-align:center;padding:2rem;font-size:0.9rem;">No evacuation needed</p>'; 
+    } 
+  } catch (err) { 
+    showToast('Connection error: ' + err.message); 
+  } finally { 
+    document.getElementById('loadOverlay').classList.remove('active'); 
+  } 
+}
+
+// Update UI
+function updateUI(data) { 
+  setGauge(data.risk_percentage); 
+  
+  const typeEl = document.getElementById('disasterType'); 
+  typeEl.textContent = (data.disaster_type || 'normal').replace(/_/g, ' '); 
+  typeEl.className = 'disaster-badge disaster-' + (data.disaster_type || 'normal'); 
+  
+  const evacEl = document.getElementById('evacNeeded');
+  evacEl.textContent = data.evacuation_needed ? 'Required' : 'Not Needed'; 
+  evacEl.style.color = data.evacuation_needed ? '#ef4444' : '#10b981'; 
+  
+  if (data.sensor_data) { 
+    document.getElementById('tempValue').textContent = data.sensor_data.temperature?.toFixed(1); 
+    document.getElementById('pressureValue').textContent = data.sensor_data.pressure?.toFixed(0); 
+    document.getElementById('humidityValue').textContent = data.sensor_data.humidity?.toFixed(0); 
+    document.getElementById('windValue').textContent = data.sensor_data.wind_speed?.toFixed(1); 
+  } 
+  
+  document.getElementById('lastUpdate').textContent = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '--'; 
+  
+  const badge = document.getElementById('riskLevelBadge'); 
+  badge.textContent = data.risk_level; 
+  badge.className = 'status-pill ' + (data.risk_level === 'CRITICAL' ? 'pill-danger' : data.risk_level === 'HIGH' ? 'pill-warning' : 'pill-success'); 
+  
+  const quantumStatus = document.getElementById('quantumStatus'); 
+  quantumStatus.textContent = data.quantum_enabled ? 'Active' : 'Fallback'; 
+  quantumStatus.className = 'status-pill ' + (data.quantum_enabled ? 'pill-success' : 'pill-warning'); 
+  
+  if (data.current_position && data.disaster_location) {
+    updateMap(data.current_position, data.disaster_location); 
+  }
+}
+
+// Fetch route
+async function fetchRoute(data) { 
+  try { 
+    const res = await fetch('/api/route', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ 
+        current: data.current_position, 
+        disaster: data.disaster_location, 
+        type: data.disaster_type 
+      }) 
+    }); 
+    
+    const route = await res.json(); 
+    if (!res.ok || route.error) return; 
+    
+    const routesEl = document.getElementById('allRoutes'); 
+    if (route.all_routes) { 
+      routesEl.innerHTML = route.all_routes.map((r, i) => 
+        `<div class="route-option ${i === 0 ? 'optimal' : ''}" onclick="selectRoute(${JSON.stringify([r.coords[0], r.coords[1]])})">
+          <div><span class="route-zone">${r.zone}</span><span class="route-distance">${r.distance_km} km</span></div>
+          <span class="route-score">Score: ${r.safety_score}</span>
+        </div>`
+      ).join(''); 
+    } 
+  } catch (e) { 
+    console.log('Fetch route error:', e); 
+  } 
+}
+
+// Select route
+function selectRoute(lat, lon) { 
+  if (map && currentPrediction) { 
+    L.circleMarker([lat, lon], { 
+      radius: 8, 
+      fillColor: '#10b981', 
+      color: '#fff', 
+      weight: 2 
+    }).addTo(map).bindPopup('Safe Zone'); 
+    
+    const current = currentPrediction.current_position; 
+    L.polyline([[current.lat, current.lon], [lat, lon]], { 
+      color: '#10b981', 
+      weight: 4, 
+      opacity: 0.8 
+    }).addTo(map); 
+    
+    map.fitBounds([[current.lat, current.lon], [lat, lon]], { padding: [40, 40] }); 
+    showToast('Route selected'); 
+  } 
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => { 
+  console.log('Dashboard loading...');
+  initMap(); 
+  runPrediction(); 
+});
+
+// Expose functions globally
+window.toggleCalamityMode = toggleCalamityMode; 
+window.runPrediction = runPrediction; 
+window.getUserLocation = getUserLocation; 
+window.selectRoute = selectRoute;
+</script>
+</body>
 </html>
