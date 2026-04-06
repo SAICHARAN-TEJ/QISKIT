@@ -73,6 +73,11 @@ Location Input
 
 ## Technical Highlights
 
+### APIs Integrated (Securely)
+- OpenWeatherMap: Real temperature, pressure, humidity, wind data
+- OpenRouteService: Actual driving routes following road networks
+- Keys stored as environment variables - never in code
+
 ### Quantum-Inspired Elements
 - Variational Circuits: For complex pattern recognition in weather data
 - Optimization Landscapes: Finding optimal evacuation directions
@@ -98,24 +103,6 @@ QISKIT/
 ├── Procfile                # For Render deployment
 └── runtime.txt             # Python version specification
 ```
-
-## Deployment Ready
-
-### Deploy to Render (Free Tier)
-1. Fork this repository
-2. Create new Web Service on Render
-3. Connect your forked repo
-4. Add environment variables:
-   - OPENWEATHERMAP_API_KEY: Your free key from https://openweathermap.org/api
-   - ORS_API_KEY: Your free key from https://openrouteservice.org/dev/#/signup
-5. Click "Create Web Service" - deployment automatic!
-
-### Environment Variables
-| Variable | Purpose | Example |
-|----------|---------|---------|
-| OPENWEATHERMAP_API_KEY | Real weather data | 188d34eaa019703a9be675707e8ba48d |
-| ORS_API_KEY | Real road routing | eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjkxMDQxMDdlNTE3MzQwNDk5MzU1ZTJlZDkxZmU5MjBkIiwiaCI6Im11cm11cjY0In0= |
-| PORT | Auto-set by Render | 10000 |
 
 ## Use Cases
 
